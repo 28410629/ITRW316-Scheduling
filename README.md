@@ -1,6 +1,6 @@
 # C++_Multithreading
 
-Exploring multithreading in C++
+Exploring multithreading in C++, via https://www.geeksforgeeks.org/multithreading-in-cpp/
 
 Dependencies : 
 sudo apt install gcc build-essential
