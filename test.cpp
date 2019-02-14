@@ -1,6 +1,3 @@
-
-// CPP program to demonstrate multithreading 
-// using three different callables. 
 #include <iostream> 
 #include <thread> 
 #include <mutex>
@@ -11,9 +8,9 @@ mutex m_mutex;
 
 // shared print function for cout
 void shared_print(char c, int v) {
-	m_mutex.lock();
+	m_mutex.lock(); // locks other threads even main from using resource
 	cout << c << v << "\n";
-	m_mutex.unlock();
+	m_mutex.unlock(); // unlocks resource so that another thread can have access
 }
 
 // function for sequence
