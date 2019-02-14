@@ -3,62 +3,38 @@
 // using three different callables. 
 #include <iostream> 
 #include <thread> 
+#include <mutex>
 using namespace std; 
-  
-// A dummy function 
-void foo(int Z) 
-{ 
-    for (int i = 0; i < Z; i++) { 
-        cout << "Thread using function"
-               " pointer as callable\n"; 
-    } 
-} 
-  
-// A callable object 
-class thread_obj { 
-public: 
-    void operator()(int x) 
-    { 
-        for (int i = 0; i < x; i++) 
-            cout << "Thread using function"
-                  " object as  callable\n"; 
-    } 
-}; 
-  
+
+// mutex used to lock other threads from gaining access to shared resource
+mutex m_mutex;
+
+// shared print function for cout
+void shared_print(char c, int v) {
+	m_mutex.lock();
+	cout << c << v << "\n";
+	m_mutex.unlock();
+}
+
+// function for sequence
+void foo(char d, int a) {
+	for (int i = 1; i <= a; i++) {
+      		shared_print(d, i);
+	}
+}	
+
 int main() 
 { 
-    cout << "Threads 1 and 2 and 3 "
-         "operating independently" << endl; 
-  
-    // This thread is launched by using  
-    // function pointer as callable 
-    thread th1(foo, 3); 
-  
-    // This thread is launched by using 
-    // function object as callable 
-    thread th2(thread_obj(), 3); 
-  
-    // Define a Lambda Expression 
-    auto f = [](int x) { 
-        for (int i = 0; i < x; i++) 
-            cout << "Thread using lambda"
-             " expression as callable\n"; 
-    }; 
-  
-    // This thread is launched by using  
-    // lamda expression as callable 
-    thread th3(f, 3); 
-  
-    // Wait for the threads to finish 
-    // Wait for thread t1 to finish 
-    th1.join(); 
-  
-    // Wait for thread t2 to finish 
-    th2.join(); 
-  
-    // Wait for thread t3 to finish 
-    th3.join(); 
-  
-    return 0; 
+	thread th2(foo, 'B', 20); // child thread - 1
+	thread th3(foo, 'C', 20); // child thread - 2
+	thread th4(foo, 'D', 20); // child thread - 3
+	foo('A', 20); // main thread
+	//th2.detach();
+	//th3.detach();
+	//th4.detach();
+	th2.join(); // main thread, waits for child to finish
+	th3.join(); // main thread, waits for child to finish
+	th4.join(); // main thread, waits for child to finish
+	return 0; 
 } 
 
