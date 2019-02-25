@@ -52,10 +52,13 @@ public class MyThreads extends Thread {
 
     public void activeLabel() {
         if (active) {
-            panel.setBorder(BorderFactory.createTitledBorder("<html>Thread : " + threadID + ", <font color='red'>Active</font></html>"));
-            
+            panel.setBorder(BorderFactory.createTitledBorder("<html>Thread : " + threadID + ", <font color='red'>ACTIVE</font></html>"));
+            panel.repaint();
+            panel.revalidate();
         } else {
-            panel.setBorder(BorderFactory.createTitledBorder("<html>Thread : " + threadID + ", <font color='blue'>Inactive</font></html>"));
+            panel.setBorder(BorderFactory.createTitledBorder("<html>Thread : " + threadID + ", <font color='blue'>INACTIVE</font></html>"));
+            panel.repaint();
+            panel.revalidate();
         }
     }
 
@@ -81,7 +84,9 @@ public class MyThreads extends Thread {
                 Thread.currentThread().interrupt();
             }
             if(i == 100) {
-                panel.setBorder(BorderFactory.createTitledBorder("<html>Thread : " + threadID + ", <font color='green'>Finished</font></html>"));
+                panel.setBorder(BorderFactory.createTitledBorder("<html>Thread : " + threadID + ", <font color='green'>FINISHED</font></html>"));
+                panel.repaint();
+                panel.revalidate();
                 terminate();
             }
         }

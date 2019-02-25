@@ -87,7 +87,7 @@ public class Interface extends JFrame {
             public void stateChanged(ChangeEvent e) {
                 int val = ((JSlider)e.getSource()).getValue();
                 speedLabel.setText("<html>Set Before Starting! : <font color='orange'> " + val + "</font></html>");
-                speedValue = 10 - ((JSlider)e.getSource()).getValue();
+                speedValue = 11 - ((JSlider)e.getSource()).getValue();
                 mainWindow.repaint();
                 mainWindow.revalidate();
                 resetThreads();
