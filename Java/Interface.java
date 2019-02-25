@@ -22,7 +22,7 @@ public class Interface extends JFrame {
     JButton reset;
     static final int speedMin = 0;
     static final int speedMax = 10;
-    static final int speedInit = 8;   
+    static final int speedInit = 10;   
     JSlider speedSlider = new JSlider(JSlider.HORIZONTAL, speedMin, speedMax, speedInit);
     static final int activeMin = 2;
     static final int activeMax = 8;
@@ -30,7 +30,8 @@ public class Interface extends JFrame {
     JSlider activeSlider = new JSlider(JSlider.HORIZONTAL, activeMin, activeMax, activeInit);
     MyThreads[] threads = new MyThreads[8];
     JFrame mainWindow;
-    int speedValue = 2;
+    int speedValue = 1; // initial speed value
+    ThreadScheming scheme = new ThreadScheming();
 
     public Interface() {
         super("28410629 - Thread Application");
@@ -155,9 +156,17 @@ public class Interface extends JFrame {
                         threads[i].resume();
                     }                   
                 } else {
-                    for (int i = 0; i < activeSlider.getValue(); i++) {
-                        threads[i].start(); 
-                    } 
+                    switch (threadSelection.getSelectedItem().toString()) {
+                        // "Shortest Job First", "Shortest Remaining Time", , "Priority Scheduling", "Multiple Queue"
+                        case "First-Come First-Serve":
+                            scheme.firstComeFirstServed(threads);
+                            break; 
+                        case "Round-Robin":
+                            scheme.roundRobin(threads);
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }  
         });  

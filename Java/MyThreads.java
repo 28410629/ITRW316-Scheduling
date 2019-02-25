@@ -66,6 +66,10 @@ public class MyThreads extends Thread {
         return panel;
     }
 
+    public boolean getRunning() {
+        return running;
+    }
+    
     public void terminate() {
         running = false;
     }
