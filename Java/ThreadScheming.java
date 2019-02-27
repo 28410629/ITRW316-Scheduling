@@ -1,25 +1,38 @@
+import java.util.List;
+import java.util.ArrayList;
+
 public class ThreadScheming {
 
-    public void firstComeFirstServed(MyThreads[] threads) {
+    private List<MyThreads> _listThreads;
+    private int _amountThreads;
+
+    public void setThreads(List<MyThreads> listThreads, int amountThreads) {
+        _listThreads = listThreads;
+        _amountThreads = amountThreads;
+    }
+
+    public void firstComeFirstServed() {
         Thread t1 = new Thread(new Runnable() {
             @Override
             public void run() {
-                for (int i = 0; i < threads.length; i++) {
-                    threads[i].start();
-                    while (threads[i].isAlive()) { }
-                    threads[i].terminate();
+                int count = 0;
+                while (count < _amountThreads) {
+                    _listThreads.get(count).start();
+                    while (_listThreads.get(count).isAlive()) { }
+                    _listThreads.get(count).terminate();
+                    count++;
                 }
             }
         });  
         t1.start();
     }
 
-    public void roundRobin(MyThreads[] threads) {
+    public void roundRobin() {
         Thread t2 = new Thread(new Runnable() {
             @Override
             public void run() {
                 int amountFinished = 0;
-                for (int i = 0; i < threads.length; i++) {
+                /*for (int i = 0; i < threads.length; i++) {
                     System.out.println("we are a go");
                     if (threads[i].getRunning()) {
                         try {
@@ -42,7 +55,7 @@ public class ThreadScheming {
                             System.out.println(i + " : terminate, failure");
                         }
                     }
-                }
+                }*/
             }
         });  
         t2.start();

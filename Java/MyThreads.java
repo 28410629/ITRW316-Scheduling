@@ -62,6 +62,14 @@ public class MyThreads extends Thread {
         }
     }
 
+    public void setGlobalSpeed(int spd) {
+        globalSpeed = spd;
+    }
+
+    public int getGlobalSpeed() {
+        return globalSpeed;
+    }
+
     public JPanel getGUI() {
         return panel;
     }

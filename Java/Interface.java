@@ -1,7 +1,9 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;  
+import java.awt.event.*;
 import javax.swing.event.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Interface extends JFrame {
     JPanel[] panels = new JPanel[6];
@@ -28,7 +30,7 @@ public class Interface extends JFrame {
     static final int activeMax = 8;
     static final int activeInit = 2; 
     JSlider activeSlider = new JSlider(JSlider.HORIZONTAL, activeMin, activeMax, activeInit);
-    MyThreads[] threads = new MyThreads[8];
+    List<MyThreads> listThreads = new ArrayList<MyThreads>();
     JFrame mainWindow;
     int speedValue = 1; // initial speed value
     ThreadScheming scheme = new ThreadScheming();
@@ -91,7 +93,10 @@ public class Interface extends JFrame {
                 speedValue = 11 - ((JSlider)e.getSource()).getValue();
                 mainWindow.repaint();
                 mainWindow.revalidate();
-                resetThreads();
+                // set new speeds for threads
+                for (MyThreads t:listThreads) {
+                    t.setGlobalSpeed(speedValue);
+                }
             }
         });
         // add panel components
@@ -123,7 +128,20 @@ public class Interface extends JFrame {
                 activeLabel.setText("<html>Set Before Starting! : <font color='orange'> " + val + "</font></html>");
                 mainWindow.repaint();
                 mainWindow.revalidate();
-                resetThreads();
+                //resetThreads(); this should be replaced with preamptive approach
+                int amount = panels[5].getComponentCount();
+                int newVal = activeSlider.getValue();
+                if (amount > newVal) {
+                    // remove threads
+                    for (int i = 1; i <= (amount - newVal); i++) {
+                        removeLastThread();
+                    }
+                } else {
+                    // add threads
+                    for (int i = 1; i <= (newVal - amount); i++) {
+                        addLastThread();
+                    }
+                }
             }
         });
         // add panel components
@@ -152,17 +170,18 @@ public class Interface extends JFrame {
         start.addActionListener(new ActionListener(){  
             public void actionPerformed(ActionEvent e){  
                 if (start.getText() == "Resume") {
-                    for (int i = 0; i < activeSlider.getValue(); i++) {
-                        threads[i].resume();
-                    }                   
+                    for (MyThreads t:listThreads) {
+                        t.resume();
+                    }                  
                 } else {
                     switch (threadSelection.getSelectedItem().toString()) {
                         // "Shortest Job First", "Shortest Remaining Time", , "Priority Scheduling", "Multiple Queue"
                         case "First-Come First-Serve":
-                            scheme.firstComeFirstServed(threads);
+                            scheme.setThreads(listThreads, listThreads.size());
+                            scheme.firstComeFirstServed();
                             break; 
                         case "Round-Robin":
-                            scheme.roundRobin(threads);
+                            scheme.roundRobin();
                             break;
                         default:
                             break;
@@ -173,14 +192,14 @@ public class Interface extends JFrame {
         stop.addActionListener(new ActionListener(){  
             public void actionPerformed(ActionEvent e){  
                 start.setText("Resume");
-                for (int i = 0; i < activeSlider.getValue(); i++) {
-                    threads[i].suspend();
-                } 
+                for (MyThreads t:listThreads) {
+                    t.suspend();
+                }
             }  
         }); 
         reset.addActionListener(new ActionListener(){  
             public void actionPerformed(ActionEvent e){  
-                resetThreads();
+                resetThreads(activeSlider.getValue());
             }  
         }); 
         // add panel components
@@ -199,35 +218,49 @@ public class Interface extends JFrame {
         panels[5].setSize(420, 200);
         panels[5].setBorder(BorderFactory.createTitledBorder("Threads"));
         panels[5].setLayout(gLayout2);
-        // create components
-        for (int i = 0; i < 8; i++) {
-            threads[i] = new MyThreads(i, speedValue);
-        }
-        // add components to panel
-        for (int i = 0; i < 8; i++) {
-            panels[5].add(threads[i].getGUI());
-        }
+        createAddThread();
     }
 
-    public void resetThreads() {
-        // terminate existing threads
+    public void createAddThread() {
+        // create components
         for (int i = 0; i < activeSlider.getValue(); i++) {
-            threads[i].terminate();
-            threads[i] = null;
-        } 
+            listThreads.add(new MyThreads(i, speedValue));
+        }
+        // add components to panel
+        for (MyThreads t:listThreads) {
+            panels[5].add(t.getGUI());
+        }
+        mainWindow.repaint();
+        mainWindow.revalidate();
+    }
+
+    public void resetThreads(int amount) {
+        // terminate existing threads
+        for (MyThreads t:listThreads) {
+            t.terminate();;
+        }
+        listThreads.clear();
         // remove components from thread panel
         start.setText("Start");
         panels[5].removeAll();
         mainWindow.repaint();
         mainWindow.revalidate();
-        // create components
-        for (int i = 0; i < 8; i++) {
-            threads[i] = new MyThreads(i, speedValue);
-        }
-        // add components to panel
-        for (int i = 0; i < 8; i++) {
-            panels[5].add(threads[i].getGUI());
-        }
+        // create threads components and add them to panel
+        createAddThread();
+    }
+
+    public void removeLastThread() {
+        panels[5].remove(listThreads.get(listThreads.size() - 1).getGUI());
+        listThreads.remove(listThreads.size() - 1);
+        scheme.setThreads(listThreads, listThreads.size());
+        mainWindow.repaint();
+        mainWindow.revalidate();
+    }
+
+    public void addLastThread() {
+        listThreads.add(new MyThreads(listThreads.size(), speedValue));
+        scheme.setThreads(listThreads, listThreads.size());
+        panels[5].add(listThreads.get(listThreads.size() - 1).getGUI());
         mainWindow.repaint();
         mainWindow.revalidate();
     }
