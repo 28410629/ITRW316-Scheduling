@@ -1,3 +1,4 @@
+import javax.swing.*;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -5,10 +6,31 @@ public class ThreadScheming {
 
     private List<MyThreads> _listThreads;
     private int _amountThreads;
+    private JButton _buttonStart;
+    private JButton _buttonStop;
+    private JButton _buttonReset;
+    private boolean _isStopped;
+
+    public ThreadScheming (JButton buttonStart, JButton buttonStop, JButton buttonReset) {
+        _buttonStart = buttonStart;
+        _buttonStop = buttonStop;
+        _buttonReset = buttonReset;
+    }
+
+    public void buttonFinished() {
+        _buttonStart.setText("Finished");
+        _buttonStart.setEnabled(false);
+        _buttonStop.setEnabled(false);
+        _buttonReset.setEnabled(true);
+    }
 
     public void setThreads(List<MyThreads> listThreads, int amountThreads) {
         _listThreads = listThreads;
         _amountThreads = amountThreads;
+    }
+
+    public void setIsStopped(boolean isStopped) {
+        _isStopped = isStopped;
     }
 
     public void firstComeFirstServed() {
@@ -18,10 +40,17 @@ public class ThreadScheming {
                 int count = 0;
                 while (count < _amountThreads) {
                     _listThreads.get(count).start();
-                    while (_listThreads.get(count).isAlive()) { }
+                    while (_listThreads.get(count).isAlive()) {
+                        try {
+                            Thread.sleep(600); // less work intensive on CPU
+                        } catch (InterruptedException ex) {
+                            Thread.currentThread().interrupt();
+                        }
+                     }
                     _listThreads.get(count).terminate();
                     count++;
                 }
+                buttonFinished();
             }
         });  
         t1.start();
@@ -31,31 +60,37 @@ public class ThreadScheming {
         Thread t2 = new Thread(new Runnable() {
             @Override
             public void run() {
-                int amountFinished = 0;
-                /*for (int i = 0; i < threads.length; i++) {
-                    System.out.println("we are a go");
-                    if (threads[i].getRunning()) {
-                        try {
-                            threads[i].start();
-                            System.out.println(i + " : started");
-                        } catch (Exception e) {
-                            threads[i].resume();
-                            System.out.println(i + " : resumed");
-                        }
-                        int count = 0;
-                        while (count < 60) { 
-                            System.out.println(count + " : count running");
+                
+                int count = 0;
+                while (count < _amountThreads) {
+                    for (int i = 0; i < _amountThreads; i++) {
+                        if (_listThreads.get(i).isTerminated() && !_listThreads.get(i).getReportTerminate()) {
                             count++;
-                        }
-                        try {
-                            threads[i].suspend();
-                            System.out.println(i + " : suspend");
-                        } catch (Exception e) {
-                            threads[i].terminate();
-                            System.out.println(i + " : terminate, failure");
+                            _listThreads.get(i).setReportTerminate(true); // this thread is reported to be finished
+                            System.out.println("RR_Finished : " + count + " / " + _amountThreads);
+                        } else {
+                            while (_isStopped) { 
+                                try {
+                                    Thread.sleep(600);  // less work intensive on CPU
+                                } catch (InterruptedException ex) {
+                                    Thread.currentThread().interrupt();
+                                }
+                             }
+                            try {
+                                _listThreads.get(i).start();
+                            } catch (Exception ex) {
+                                _listThreads.get(i).resume();
+                            }
+                            try {
+                                Thread.sleep(600); // quantum
+                            } catch (InterruptedException ex) {
+                                Thread.currentThread().interrupt();
+                            }
+                            _listThreads.get(i).suspend();
                         }
                     }
-                }*/
+                }
+                buttonFinished();
             }
         });  
         t2.start();

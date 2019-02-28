@@ -33,7 +33,7 @@ public class Interface extends JFrame {
     List<MyThreads> listThreads = new ArrayList<MyThreads>();
     JFrame mainWindow;
     int speedValue = 1; // initial speed value
-    ThreadScheming scheme = new ThreadScheming();
+    ThreadScheming scheme;
 
     public Interface() {
         super("28410629 - Thread Application");
@@ -48,6 +48,7 @@ public class Interface extends JFrame {
         setupThread();
         this.add(panels[0]); // main panel
         this.add(panels[5]); // thread panel
+        scheme = new ThreadScheming(start, stop, reset);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setSize(1024, 500);
         this.setResizable(false);
@@ -170,19 +171,35 @@ public class Interface extends JFrame {
         start.addActionListener(new ActionListener(){  
             public void actionPerformed(ActionEvent e){  
                 if (start.getText() == "Resume") {
-                    for (MyThreads t:listThreads) {
-                        t.resume();
+                    buttonStart();
+                    switch (threadSelection.getSelectedItem().toString()) {
+                        case "First-Come First-Serve":
+                            for (MyThreads t:listThreads) {
+                                t.resume();
+                            } 
+                            break; 
+                        default:
+                            scheme.setIsStopped(false);
+                            break;
                     }                  
                 } else {
+                    buttonStart();
+                    scheme.setThreads(listThreads, listThreads.size());
                     switch (threadSelection.getSelectedItem().toString()) {
-                        // "Shortest Job First", "Shortest Remaining Time", , "Priority Scheduling", "Multiple Queue"
                         case "First-Come First-Serve":
-                            scheme.setThreads(listThreads, listThreads.size());
                             scheme.firstComeFirstServed();
                             break; 
                         case "Round-Robin":
                             scheme.roundRobin();
                             break;
+                        case "Shortest Job First":
+                            break;
+                        case "Shortest Remaining Time":
+                            break;
+                        case "Priority Scheduling":
+                            break; 
+                        case "Multiple Queue":
+                            break; 
                         default:
                             break;
                     }
@@ -191,9 +208,16 @@ public class Interface extends JFrame {
         });  
         stop.addActionListener(new ActionListener(){  
             public void actionPerformed(ActionEvent e){  
-                start.setText("Resume");
-                for (MyThreads t:listThreads) {
-                    t.suspend();
+                buttonStop();
+                switch (threadSelection.getSelectedItem().toString()) {
+                    case "First-Come First-Serve":
+                        for (MyThreads t:listThreads) {
+                            t.suspend();
+                        } 
+                        break; 
+                    default:
+                        scheme.setIsStopped(true);
+                        break;
                 }
             }  
         }); 
@@ -210,6 +234,20 @@ public class Interface extends JFrame {
         gbc.gridx = 3;
         gbc.gridy = 0;
         panels[0].add(panels[4], gbc);
+    }
+
+    public void buttonStart() {
+        start.setText("Active");
+        start.setEnabled(false);
+        stop.setEnabled(true);
+        reset.setEnabled(false);
+    }
+
+    public void buttonStop() {
+        start.setText("Resume");
+        start.setEnabled(true);
+        stop.setEnabled(false);
+        reset.setEnabled(true);
     }
 
     public void setupThread() {
@@ -242,6 +280,7 @@ public class Interface extends JFrame {
         listThreads.clear();
         // remove components from thread panel
         start.setText("Start");
+        start.setEnabled(true);
         panels[5].removeAll();
         mainWindow.repaint();
         mainWindow.revalidate();

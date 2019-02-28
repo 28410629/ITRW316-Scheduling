@@ -1,5 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
+import javax.swing.event.*;
 
 public class MyThreads extends Thread {
 
@@ -22,6 +24,10 @@ public class MyThreads extends Thread {
     private static final int workMax = 10;
     private static final int workInit = 0; 
     private JSlider workSlider = new JSlider(JSlider.HORIZONTAL, workMin, workMax, workInit);
+    private boolean isTerminated = false;
+    private int _priority = 0;
+    private int _workIntensity = 0;
+    private boolean _reportTerminate = false;
 
     public MyThreads(int threadID, int Speed) {
         super();
@@ -43,6 +49,19 @@ public class MyThreads extends Thread {
         prioritySlider.setBackground(new Color(255,140,0));
         workSlider.setBackground(new Color(128,128,128));
         activeLabel.setText("<html><font color='orange'>Priority</font>, <font color='gray'>Work Intensity</font></html>");
+        // add listener events
+        workSlider.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                _workIntensity = workSlider.getValue();
+                System.out.println("Thread " + threadID + " - Work Intensity : " + _workIntensity);
+            }
+        });
+        prioritySlider.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                _priority = prioritySlider.getValue();
+                System.out.println("Thread " + threadID + " - Priority : " + _priority);
+            }
+        });
         // add panel components
         panel.add(progressBar);
         panel.add(prioritySlider);
@@ -73,13 +92,21 @@ public class MyThreads extends Thread {
     public JPanel getGUI() {
         return panel;
     }
-
-    public boolean getRunning() {
-        return running;
-    }
     
     public void terminate() {
         running = false;
+    }
+
+    public boolean isTerminated() {
+        return isTerminated;
+    }
+
+    public void setReportTerminate(boolean reportTerminate) {
+        _reportTerminate = reportTerminate;
+    }
+
+    public boolean getReportTerminate() {
+        return _reportTerminate;
     }
 
     @Override
@@ -91,7 +118,7 @@ public class MyThreads extends Thread {
             progressBar.setValue(i);
             try {
                 Thread.sleep(globalSpeed * 100); // global speed
-                Thread.sleep(0); // thread work intensity
+                Thread.sleep(_workIntensity * 20); // thread work intensity
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
             }
@@ -99,6 +126,7 @@ public class MyThreads extends Thread {
                 panel.setBorder(BorderFactory.createTitledBorder("<html>Thread : " + threadID + ", <font color='green'>FINISHED</font></html>"));
                 panel.repaint();
                 panel.revalidate();
+                isTerminated = true;
                 terminate();
             }
         }
