@@ -3,7 +3,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.event.*;
 
-public class MyThreads extends Thread {
+public class MyThreads extends Thread implements Comparable<MyThreads>{
 
     private JPanel panel;
     private int threadID;
@@ -48,18 +48,16 @@ public class MyThreads extends Thread {
         activeLabel();
         prioritySlider.setBackground(new Color(255,140,0));
         workSlider.setBackground(new Color(128,128,128));
-        activeLabel.setText("<html><font color='orange'>Priority</font>, <font color='gray'>Work Intensity</font></html>");
+        activeLabel.setText("<html><font color='orange'>Priority : 0</font> | <font color='gray'>Work Intensity : 0</font></html>");
         // add listener events
         workSlider.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                _workIntensity = workSlider.getValue();
-                System.out.println("Thread " + threadID + " - Work Intensity : " + _workIntensity);
+                updateActiveLabel();
             }
         });
         prioritySlider.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                _priority = prioritySlider.getValue();
-                System.out.println("Thread " + threadID + " - Priority : " + _priority);
+                updateActiveLabel();
             }
         });
         // add panel components
@@ -67,6 +65,12 @@ public class MyThreads extends Thread {
         panel.add(prioritySlider);
         panel.add(workSlider);
         panel.add(activeLabel);
+    }
+
+    public void updateActiveLabel() {
+        _workIntensity = workSlider.getValue();
+        _priority = prioritySlider.getValue();
+        activeLabel.setText("<html><font color='orange'>Priority : " + _priority + "</font>, <font color='gray'>Work Intensity : " + _workIntensity + "</font></html>");
     }
 
     public void activeLabel() {
@@ -131,4 +135,9 @@ public class MyThreads extends Thread {
             }
         }
     } 
+
+    @Override
+    public int compareTo (MyThreads other) {
+        return Integer.compare(this._workIntensity, other._workIntensity);
+    }
 }

@@ -33,6 +33,7 @@ public class ThreadScheming {
         _isStopped = isStopped;
     }
 
+    // non-preemptive
     public void firstComeFirstServed() {
         Thread t1 = new Thread(new Runnable() {
             @Override
@@ -56,6 +57,7 @@ public class ThreadScheming {
         t1.start();
     }
 
+    // preemptive
     public void roundRobin() {
         Thread t2 = new Thread(new Runnable() {
             @Override
@@ -89,6 +91,34 @@ public class ThreadScheming {
                             _listThreads.get(i).suspend();
                         }
                     }
+                }
+                buttonFinished();
+            }
+        });  
+        t2.start();
+    }
+
+    // non-preemptive
+    public void shortestJobFirst() {
+        Thread t2 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                int count = 0;
+                
+                while (count < _amountThreads) {
+                    // sort
+                    _listThreads.sort(null); 
+                    // run
+                    _listThreads.get(count).start();
+                    while (_listThreads.get(count).isAlive()) {
+                        try {
+                            Thread.sleep(600); // less work intensive on CPU
+                        } catch (InterruptedException ex) {
+                            Thread.currentThread().interrupt();
+                        }
+                     }
+                    _listThreads.get(count).terminate();
+                    count++;
                 }
                 buttonFinished();
             }

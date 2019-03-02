@@ -61,12 +61,23 @@ public class Interface extends JFrame {
         panels[1] = new JPanel();
         panels[1].setSize(420, 75);
         panels[1].setBorder(BorderFactory.createTitledBorder("Thread Scheming"));
-        panels[1].setLayout(gbLayout);
+        panels[1].setLayout(gLayout);
         // create panel components
+        JLabel preemptiveLabel = new JLabel("Non-Preemptive");
         threadSelection = new JComboBox(threadSchemes);
-        threadSelection.setPreferredSize(new Dimension(200,86));
+        threadSelection.setPreferredSize(new Dimension(200,43));
+        threadSelection.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                if (threadSelection.getSelectedItem().toString() == "First-Come First-Serve" || threadSelection.getSelectedItem().toString() == "Shortest Job First") {
+                    preemptiveLabel.setText("Non-Preemptive");
+                } else {
+                    preemptiveLabel.setText("Preemptive");
+                }
+            }
+        });
         // add panel components
         panels[1].add(threadSelection);
+        panels[1].add(preemptiveLabel);
         // add panel to main panel
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -85,12 +96,12 @@ public class Interface extends JFrame {
         speedSlider.setMinorTickSpacing(1);
         speedSlider.setPaintTicks(true);
         speedSlider.setPaintLabels(true);
-        JLabel speedLabel = new JLabel("Set Before Starting!");
+        JLabel speedLabel = new JLabel("<html>Speed : <font color='orange'>10</font></html>");
         // add listener event
         speedSlider.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 int val = ((JSlider)e.getSource()).getValue();
-                speedLabel.setText("<html>Set Before Starting! : <font color='orange'> " + val + "</font></html>");
+                speedLabel.setText("<html>Speed : <font color='orange'> " + val + "</font></html>");
                 speedValue = 11 - ((JSlider)e.getSource()).getValue();
                 mainWindow.repaint();
                 mainWindow.revalidate();
@@ -116,7 +127,7 @@ public class Interface extends JFrame {
         panels[3].setBorder(BorderFactory.createTitledBorder("Active Threads"));
         panels[3].setLayout(gLayout);
         // create components 
-        JLabel activeLabel = new JLabel("Set Before Starting!");
+        JLabel activeLabel = new JLabel("<html>Threads : <font color='orange'>2</font></html>");
         activeSlider.setPreferredSize(new Dimension(200, 43));
         activeSlider.setMajorTickSpacing(1);
         activeSlider.setMinorTickSpacing(1);
@@ -126,7 +137,7 @@ public class Interface extends JFrame {
         activeSlider.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 int val = ((JSlider)e.getSource()).getValue();
-                activeLabel.setText("<html>Set Before Starting! : <font color='orange'> " + val + "</font></html>");
+                activeLabel.setText("<html>Threads : <font color='orange'> " + val + "</font></html>");
                 mainWindow.repaint();
                 mainWindow.revalidate();
                 //resetThreads(); this should be replaced with preamptive approach
@@ -193,6 +204,7 @@ public class Interface extends JFrame {
                             scheme.roundRobin();
                             break;
                         case "Shortest Job First":
+                            scheme.shortestJobFirst();
                             break;
                         case "Shortest Remaining Time":
                             break;
