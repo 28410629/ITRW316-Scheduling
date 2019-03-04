@@ -28,6 +28,8 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
     private int _priority = 0;
     private int _workIntensity = 0;
     private boolean _reportTerminate = false;
+    private boolean _priorityComparable = false;
+    private boolean _shortestComparable = false;
 
     public MyThreads(int threadID, int Speed) {
         super();
@@ -93,6 +95,10 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
         return globalSpeed;
     }
 
+    public int getThreadID() {
+        return threadID;
+    }
+
     public JPanel getGUI() {
         return panel;
     }
@@ -113,6 +119,14 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
         return _reportTerminate;
     }
 
+    public void setPriorityComparable(boolean priorityComparable) {
+        _priorityComparable = priorityComparable;
+    }
+
+    public void setShortestComparable(boolean shortestComparable) {
+        _shortestComparable = shortestComparable;
+    }
+
     @Override
     public void run(){
         System.out.println(globalSpeed + " : " + threadID);
@@ -121,7 +135,7 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
             activeLabel();
             progressBar.setValue(i);
             try {
-                Thread.sleep(globalSpeed * 100); // global speed
+                Thread.sleep(globalSpeed * 50); // global speed
                 Thread.sleep(_workIntensity * 20); // thread work intensity
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
@@ -138,6 +152,14 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
 
     @Override
     public int compareTo (MyThreads other) {
-        return Integer.compare(this._workIntensity, other._workIntensity);
+        if (_priorityComparable) {
+            return Integer.compare(this._priority, other._priority);
+        } else if (_shortestComparable) {
+            int thisT = (100 - this.progressBar.getValue()) * (this._workIntensity * 20 + this.globalSpeed * 50);
+            int otherT = (100 - other.progressBar.getValue()) * (other._workIntensity * 20 + other.globalSpeed * 50);;
+            return Integer.compare(thisT, otherT);
+        } else {
+            return Integer.compare(this._workIntensity, other._workIntensity);
+        }
     }
 }
