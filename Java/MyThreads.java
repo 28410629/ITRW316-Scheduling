@@ -55,6 +55,7 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
         workSlider.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 updateActiveLabel();
+                activeLabel();
             }
         });
         prioritySlider.addChangeListener(new ChangeListener() {
@@ -77,11 +78,11 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
 
     public void activeLabel() {
         if (active) {
-            panel.setBorder(BorderFactory.createTitledBorder("<html>Thread : " + threadID + ", <font color='red'>ACTIVE</font></html>"));
+            panel.setBorder(BorderFactory.createTitledBorder("<html>Thread : " + threadID + ", <font color='red'>ACTIVE</font>, <font color='purple'>" + this.getRemainingTime() + " miliseconds</font></html>"));
             panel.repaint();
             panel.revalidate();
         } else {
-            panel.setBorder(BorderFactory.createTitledBorder("<html>Thread : " + threadID + ", <font color='blue'>INACTIVE</font></html>"));
+            panel.setBorder(BorderFactory.createTitledBorder("<html>Thread : " + threadID + ", <font color='blue'>INACTIVE</font>, <font color='purple'>" + this.getRemainingTime() + " miliseconds</font></html>"));
             panel.repaint();
             panel.revalidate();
         }
@@ -100,6 +101,7 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
     }
 
     public JPanel getGUI() {
+        activeLabel();
         return panel;
     }
     
@@ -150,14 +152,16 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
         }
     } 
 
+    public int getRemainingTime() {
+        return (100 - this.progressBar.getValue()) * (this._workIntensity * 20 + this.globalSpeed * 50);
+    }
+
     @Override
     public int compareTo (MyThreads other) {
         if (_priorityComparable) {
             return Integer.compare(this._priority, other._priority);
         } else if (_shortestComparable) {
-            int thisT = (100 - this.progressBar.getValue()) * (this._workIntensity * 20 + this.globalSpeed * 50);
-            int otherT = (100 - other.progressBar.getValue()) * (other._workIntensity * 20 + other.globalSpeed * 50);;
-            return Integer.compare(thisT, otherT);
+            return Integer.compare(this.getRemainingTime(), other.getRemainingTime());
         } else {
             return Integer.compare(this._workIntensity, other._workIntensity);
         }

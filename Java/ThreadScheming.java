@@ -85,7 +85,7 @@ public class ThreadScheming {
         }
     }
 
-    // non-preemptive (adding and removing threads not allowed)
+    // non-preemptive
     public void FCFS() {
         _preemptive = false;
         Thread t1 = new Thread(new Runnable() {
@@ -108,7 +108,7 @@ public class ThreadScheming {
             // run till thread is finished
             while (_listThreads.get(count).isAlive()) {
                 try {
-                    Thread.sleep(600); // less work intensive on CPU
+                    Thread.sleep(1); // less work intensive on CPU
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
                 }

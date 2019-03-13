@@ -110,6 +110,7 @@ public class Interface extends JFrame {
                 // set new speeds for threads
                 for (MyThreads t:listThreads) {
                     t.setGlobalSpeed(speedValue);
+                    t.activeLabel();
                 }
             }
         });
