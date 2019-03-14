@@ -274,7 +274,8 @@ public class ThreadScheming {
                     schemeThreadStart(i); // start thread
                     schemeWaitForThread(i); // wait for thread to finish
                     schemeThreadSuspend(i); // suspend thread
-                }   
+                }  
+                comparableSort(true); // turn priority comparable on 
             }
         }
         buttonFinished(); // set buttons to stopped scheme config
@@ -341,7 +342,8 @@ public class ThreadScheming {
                     schemeThreadStart(i); // start thread
                     schemeWaitForThread(i); // wait for thread to finish
                     schemeThreadSuspend(i); // suspend thread
-                }   
+                }  
+                comparableSort(false); // sort
             }
         }
         buttonFinished(); // set buttons to stopped scheme config
