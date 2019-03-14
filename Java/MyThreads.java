@@ -29,7 +29,7 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
     private int _workIntensity = 0;
     private boolean _reportTerminate = false;
     private boolean _priorityComparable = false;
-    private boolean _shortestComparable = false;
+    private int _multipleQueueLevel = 1;
 
     public MyThreads(int threadID, int Speed) {
         super();
@@ -47,15 +47,15 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
         progressBar = new JProgressBar(0, 100);
         progressBar.setValue(0);
         progressBar.setStringPainted(true);
-        activeLabel();
+        activeBorder();
         prioritySlider.setBackground(new Color(255,140,0));
         workSlider.setBackground(new Color(128,128,128));
-        activeLabel.setText("<html><font color='orange'>Priority : 0</font> | <font color='gray'>Work Intensity : 0</font></html>");
+        updateActiveLabel();
         // add listener events
         workSlider.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 updateActiveLabel();
-                activeLabel();
+                activeBorder();
             }
         });
         prioritySlider.addChangeListener(new ChangeListener() {
@@ -76,7 +76,7 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
         activeLabel.setText("<html><font color='orange'>Priority : " + _priority + "</font>, <font color='gray'>Work Intensity : " + _workIntensity + "</font></html>");
     }
 
-    public void activeLabel() {
+    public void activeBorder() {
         if (active) {
             panel.setBorder(BorderFactory.createTitledBorder("<html>Thread : " + threadID + ", <font color='red'>ACTIVE</font>, <font color='purple'>" + this.getRemainingTime() + " miliseconds</font></html>"));
             panel.repaint();
@@ -96,12 +96,24 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
         return globalSpeed;
     }
 
+    public void setMultipleQueueLevel() {
+        if (_multipleQueueLevel == 5) {
+            _multipleQueueLevel = 1;
+        } else {
+            _multipleQueueLevel++;
+        }
+    }
+
+    public int getMultipleQueueLevel() {
+        return _multipleQueueLevel;
+    }
+
     public int getThreadID() {
         return threadID;
     }
 
     public JPanel getGUI() {
-        activeLabel();
+        activeBorder();
         return panel;
     }
     
@@ -123,18 +135,14 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
 
     public void setPriorityComparable(boolean priorityComparable) {
         _priorityComparable = priorityComparable;
-    }
-
-    public void setShortestComparable(boolean shortestComparable) {
-        _shortestComparable = shortestComparable;
+        System.out.println("Thread " + threadID + " : Priority comparable = " + _priorityComparable);
     }
 
     @Override
     public void run(){
-        System.out.println(globalSpeed + " : " + threadID);
         for (int i = 1; i <= 100; i++) {
             active = true;
-            activeLabel();
+            activeBorder();
             progressBar.setValue(i);
             try {
                 Thread.sleep(globalSpeed * 50); // global speed
@@ -159,11 +167,11 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
     @Override
     public int compareTo (MyThreads other) {
         if (_priorityComparable) {
+            System.out.println("Thread " + threadID + " : Priority comparable used.");
             return Integer.compare(this._priority, other._priority);
-        } else if (_shortestComparable) {
-            return Integer.compare(this.getRemainingTime(), other.getRemainingTime());
         } else {
-            return Integer.compare(this._workIntensity, other._workIntensity);
-        }
+            System.out.println("Thread " + threadID + " : Shortest remaining time comparable used.");
+            return Integer.compare(this.getRemainingTime(), other.getRemainingTime());
+        } 
     }
 }

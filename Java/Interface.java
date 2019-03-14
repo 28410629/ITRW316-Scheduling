@@ -110,7 +110,7 @@ public class Interface extends JFrame {
                 // set new speeds for threads
                 for (MyThreads t:listThreads) {
                     t.setGlobalSpeed(speedValue);
-                    t.activeLabel();
+                    t.activeBorder();
                 }
             }
         });
@@ -216,6 +216,7 @@ public class Interface extends JFrame {
                             scheme.PS();
                             break; 
                         case "Multiple Queue":
+                            scheme.MQ();
                             break; 
                         default:
                             break;
@@ -358,6 +359,7 @@ public class Interface extends JFrame {
                     scheme.PS();
                     break; 
                 case "Multiple Queue":
+                    scheme.MQ();
                     break; 
                 default:
                     break;
