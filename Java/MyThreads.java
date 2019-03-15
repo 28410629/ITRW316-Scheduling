@@ -1,6 +1,18 @@
-import javax.swing.*;
-import java.awt.*;
-import javax.swing.event.*;
+
+import java.awt.Color;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JSlider;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.plaf.ColorUIResource;
 
 public class MyThreads extends Thread implements Comparable<MyThreads>{
@@ -51,12 +63,14 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
         panel = new JPanel();
         panel.setOpaque(true);
         panel.setBackground(Color.darkGray);
-        panel.setBorder(BorderFactory.createTitledBorder("<html><font color='white'>Thread : " + threadID + "</font></html>"));
+        panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.white),"<html><font color='white'>Thread : " + threadID + "</font></html>"));
         panel.setLayout(gLayout);
         // create components 
         colorProgressBar(id);
         activeBorder();
         prioritySlider.setOpaque(true);
+        workSlider.setForeground(Color.white);
+        prioritySlider.setForeground(Color.white);
         prioritySlider.setBackground(new Color(255,140,0));
         workSlider.setBackground(new Color(128,128,128));
         updateActiveLabel();
@@ -139,11 +153,11 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
 
     public void activeBorder() {
         if (active) {
-            panel.setBorder(BorderFactory.createTitledBorder("<html><font color='white'>Thread : " + threadID + ",  </font><font color='red'>ACTIVE</font><font color='white'>,  " + this.getRemainingTime() + " miliseconds</font></html>"));
+            panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.white),"<html><font color='white'>Thread : " + threadID + ",  </font><font color='red'>ACTIVE</font><font color='white'>,  " + this.getRemainingTime() + " miliseconds</font></html>"));
             panel.repaint();
             panel.revalidate();
         } else {
-            panel.setBorder(BorderFactory.createTitledBorder("<html><font color='white'>Thread : " + threadID + ",  </font><font color='blue'>INACTIVE</font><font color='white'>,  " + this.getRemainingTime() + " miliseconds</font></html>"));
+            panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.white),"<html><font color='white'>Thread : " + threadID + ",  </font><font color='blue'>INACTIVE</font><font color='white'>,  " + this.getRemainingTime() + " miliseconds</font></html>"));
             panel.repaint();
             panel.revalidate();
         }
@@ -228,7 +242,7 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
                 Thread.currentThread().interrupt();
             }
             if(i == 100) {
-                panel.setBorder(BorderFactory.createTitledBorder("<html><font color='white'>Thread : " + threadID + ",  </font><font color='green'>FINISHED</font></html>"));
+                panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.white),"<html><font color='white'>Thread : " + threadID + ",  </font><font color='green'>FINISHED</font></html>"));
                 panel.repaint();
                 panel.revalidate();
                 isTerminated = true;

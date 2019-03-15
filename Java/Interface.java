@@ -1,15 +1,25 @@
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.event.*;
-
-
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.GroupLayout.Alignment;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,22 +96,19 @@ public class Interface extends JFrame {
 
     public void setupScheme() {
         // create panel
-        panels[1] = new JPanel();
-        panels[1].setSize(420, 75);
-        panels[1].setOpaque(true);
-        panels[1].setBackground(Color.darkGray);
-        panels[1].setBorder(BorderFactory.createTitledBorder("<html><font color='white'>Thread Scheming</font></html>"));
-        panels[1].setLayout(gLayout);
+        panelAttributes(1, "Thread Scheming", gLayout);
         // create panel components
-        preemptiveLabel = new JLabel("Non-Preemptive");
+        preemptiveLabel = new JLabel("<html><font color='white'>Non-Preemptive</font></html>");
         threadSelection = new JComboBox(threadSchemes);
         threadSelection.setPreferredSize(new Dimension(200,43));
+        threadSelection.setBackground(Color.darkGray);
+        threadSelection.setForeground(Color.white);
         threadSelection.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 if (threadSelection.getSelectedItem().toString() == "First-Come First-Serve" || threadSelection.getSelectedItem().toString() == "Shortest Job First") {
-                    preemptiveLabel.setText("Non-Preemptive");
+                    preemptiveLabel.setText("<html><font color='white'>Non-Preemptive</font></html>");
                 } else {
-                    preemptiveLabel.setText("Preemptive");
+                    preemptiveLabel.setText("<html><font color='white'>Preemptive</font></html>");
                 }
             }
         });
@@ -119,7 +126,7 @@ public class Interface extends JFrame {
         exeBar.setLayout(new GridLayout(0,20));
         exeBar.setOpaque(true);
         exeBar.setBackground(Color.darkGray);
-        exeBar.setBorder(BorderFactory.createTitledBorder("<html><font color='white'>Execution Bar</font></html>"));
+        exeBar.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.white),"<html><font color='white'>Execution Bar</font></html>"));
         for (int i = 0; i < 20; i++) {
             exeBarLabels[i] = new JLabel();
             exeBarLabels[i].setOpaque(true);
@@ -189,6 +196,8 @@ public class Interface extends JFrame {
         workSlider.setMinorTickSpacing(1);
         workSlider.setPaintTicks(true);
         workSlider.setSnapToTicks(true);
+        workSlider.setForeground(Color.white);
+        prioritySlider.setForeground(Color.white);
         // add panel components
         panels[2].add(prioritySlider);
         panels[2].add(workSlider);
@@ -203,7 +212,7 @@ public class Interface extends JFrame {
         panels[i].setSize(420, 200);
         panels[i].setOpaque(true);
         panels[i].setBackground(Color.darkGray);
-        panels[i].setBorder(BorderFactory.createTitledBorder("<html><font color='white'>" + name + "</font></html>"));
+        panels[i].setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.white),"<html><font color='white'>" + name + "</font></html>"));
         if (i == 4) {
             panels[i].setLayout(gbLayout);
         } else {
@@ -216,31 +225,39 @@ public class Interface extends JFrame {
         // create panel
         panelAttributes(3, "Active Threads", gLayout);
         // create components 
-        JLabel activeLabel = new JLabel("<html>Threads : <font color='orange'>2</font></html>");
+        JLabel activeLabel = new JLabel("<html><font color='white'>Threads : </font><font color='orange'>2</font></html>");
         activeSlider.setPreferredSize(new Dimension(200, 43));
         activeSlider.setMajorTickSpacing(1);
         activeSlider.setMinorTickSpacing(1);
         activeSlider.setPaintTicks(true);
         activeSlider.setPaintLabels(true);
+        activeSlider.setBackground(Color.darkGray);
+        activeSlider.setForeground(Color.white);
         // add listener event
         activeSlider.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 int val = ((JSlider)e.getSource()).getValue();
-                activeLabel.setText("<html>Threads : <font color='orange'> " + val + "</font></html>");
+                activeLabel.setText("<html><font color='white'>Threads : </font><font color='orange'> " + val + "</font></html>");
                 mainWindow.repaint();
                 mainWindow.revalidate();
                 int amount = panels[5].getComponentCount();
                 int newVal = activeSlider.getValue();
-                if (preemptiveLabel.getText() == "Non-Preemptive" && !start.isEnabled()) {
-                    activeLabel.setText("<html><font color='orange'>Not allowed!</font></html>");
+                if (!stop.isEnabled() && !start.isEnabled()) {
+                    activeLabel.setText("<html><font color='orange'>Not allowed, reset!</font></html>");
                     activeSlider.setValue(amount);
                     mainWindow.repaint();
                     mainWindow.revalidate();
                 } else {
                     if (amount > newVal) {
                         // remove threads
-                        for (int i = 1; i <= (amount - newVal); i++) {
-                            removeLastThread();
+                        if (stop.isEnabled() && start.isEnabled() && reset.isEnabled()) {
+                            for (int i = 1; i <= (amount - newVal); i++) {
+                                removeLastThread();
+                            }
+                        } else {
+                            activeSlider.setValue(amount);
+                            mainWindow.repaint();
+                            mainWindow.revalidate();
                         }
                     } else {
                         // add threads
@@ -345,14 +362,14 @@ public class Interface extends JFrame {
     }
 
     public void buttonStart() {
-        start.setText("Active");
+        start.setText("<html><font color='white'>Active</font></html>");
         start.setEnabled(false);
         stop.setEnabled(true);
         reset.setEnabled(false);
     }
 
     public void buttonStop() {
-        start.setText("Resume");
+        start.setText("<html><font color='white'>Resume</font></html>");
         start.setEnabled(true);
         stop.setEnabled(false);
         reset.setEnabled(true);
