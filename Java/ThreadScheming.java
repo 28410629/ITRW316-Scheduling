@@ -16,13 +16,15 @@ public class ThreadScheming {
     private boolean _schemeWasSuspendedQ = false;
     private int _schemeWasSuspendedThread;
     private int _schemeWasSuspendedQuantum;
+    private Interface _mainInterface;
 
     // CONSTRUCTOR 
 
-    public ThreadScheming (JButton buttonStart, JButton buttonStop, JButton buttonReset) {
+    public ThreadScheming (JButton buttonStart, JButton buttonStop, JButton buttonReset, Interface mainInterface) {
         _buttonStart = buttonStart;
         _buttonStop = buttonStop;
         _buttonReset = buttonReset;
+        _mainInterface = mainInterface;
     }
 
     // METHODS
@@ -134,6 +136,7 @@ public class ThreadScheming {
         } catch (Exception ex) {
             _listThreads.get(i).resume();
         }
+        _mainInterface.updateExecutionBar(i);
     }
 
     private void schemeThreadQuantum(int quantumTime) {

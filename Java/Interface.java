@@ -2,11 +2,21 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.event.*;
+
+
+import java.awt.Color;
+import javax.swing.BorderFactory;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.border.Border;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Interface extends JFrame {
     JPanel[] panels = new JPanel[6];
+    JPanel panelInfo = new JPanel();
     /* 0 - Main
        1 - Scheme
        2 - Speed
@@ -22,35 +32,51 @@ public class Interface extends JFrame {
     JButton start;
     JButton stop;
     JButton reset;
-    static final int speedMin = 0;
-    static final int speedMax = 10;
-    static final int speedInit = 10;   
-    JSlider speedSlider = new JSlider(JSlider.HORIZONTAL, speedMin, speedMax, speedInit);
+    private static final int priorityMin = 0;
+    private static final int priorityMax = 10;
+    private static final int priorityInit = 0; 
+    private JSlider prioritySlider = new JSlider(JSlider.HORIZONTAL, priorityMin, priorityMax, priorityInit);
+    private static final int workMin = 0;
+    private static final int workMax = 10;
+    private static final int workInit = 0; 
+    private JSlider workSlider = new JSlider(JSlider.HORIZONTAL, workMin, workMax, workInit);
     static final int activeMin = 2;
     static final int activeMax = 8;
     static final int activeInit = 2; 
     JSlider activeSlider = new JSlider(JSlider.HORIZONTAL, activeMin, activeMax, activeInit);
     List<MyThreads> listThreads = new ArrayList<MyThreads>();
     JFrame mainWindow;
+    Interface mainInterface;
     int speedValue = 1; // initial speed value
     ThreadScheming scheme;
     JLabel preemptiveLabel;
     boolean schemeStarted = false;
+    private int exeBarPosition = -1;
+    private JLabel[] exeBarLabels = new JLabel[20];
+    Border border = BorderFactory.createLineBorder(Color.white, 1);
 
     public Interface() {
         super("28410629 - Thread Application");
         mainWindow = this;
+        mainInterface = this;
         this.setLayout(gLayout);
         panels[0] = new JPanel();
         panels[0].setLayout(gbLayout);
+        panels[0].setOpaque(true);
+        panels[0].setBackground(Color.darkGray);
+        panelInfo.setOpaque(true);
+        panelInfo.setBackground(Color.darkGray);
+        panelInfo.setLayout(new GridLayout(2,0));
         setupScheme();
         setupSpeed();
         setupActive();
         setupButton();
         setupThread();
-        this.add(panels[0]); // main panel
+        panelInfo.add(panels[0]); // main panel
+        setupExecutionBar();
+        this.add(panelInfo);
         this.add(panels[5]); // thread panel
-        scheme = new ThreadScheming(start, stop, reset);
+        scheme = new ThreadScheming(start, stop, reset, mainInterface);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setSize(1024, 500);
         this.setResizable(false);
@@ -62,7 +88,9 @@ public class Interface extends JFrame {
         // create panel
         panels[1] = new JPanel();
         panels[1].setSize(420, 75);
-        panels[1].setBorder(BorderFactory.createTitledBorder("Thread Scheming"));
+        panels[1].setOpaque(true);
+        panels[1].setBackground(Color.darkGray);
+        panels[1].setBorder(BorderFactory.createTitledBorder("<html><font color='white'>Thread Scheming</font></html>"));
         panels[1].setLayout(gLayout);
         // create panel components
         preemptiveLabel = new JLabel("Non-Preemptive");
@@ -86,49 +114,107 @@ public class Interface extends JFrame {
         panels[0].add(panels[1], gbc);
     }
 
+    public void setupExecutionBar() {
+        JPanel exeBar = new JPanel();
+        exeBar.setLayout(new GridLayout(0,20));
+        exeBar.setOpaque(true);
+        exeBar.setBackground(Color.darkGray);
+        exeBar.setBorder(BorderFactory.createTitledBorder("<html><font color='white'>Execution Bar</font></html>"));
+        for (int i = 0; i < 20; i++) {
+            exeBarLabels[i] = new JLabel();
+            exeBarLabels[i].setOpaque(true);
+            exeBarLabels[i].setBackground(Color.darkGray);
+            exeBarLabels[i].setHorizontalAlignment(SwingConstants.CENTER);
+            exeBarLabels[i].setBorder(border);
+            exeBar.add(exeBarLabels[i]);
+        }
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        panelInfo.add(exeBar, gbc);
+    }
+
+    public void updateExecutionBar(int threadID) {
+        Color color;
+        switch (threadID) {
+            case 0:
+                color = Color.pink;
+                break;
+            case 1:
+                color = Color.magenta;
+                break;
+            case 2:
+                color = Color.cyan;
+                break;
+            case 3:
+                color = Color.yellow;
+                break;
+            case 4:
+                color = Color.green;
+                break;
+            case 5:
+                color = Color.blue;
+                break;
+            case 6:
+                color = Color.orange;
+                break;
+            case 7:
+                color = Color.white;
+                break;
+            default:
+                color = Color.black;
+                break;
+        }
+        if (exeBarPosition == 19) {
+            exeBarPosition = -1;
+        }
+        exeBarPosition++;
+        exeBarLabels[exeBarPosition].setForeground(color);
+        exeBarLabels[exeBarPosition].setText("" + threadID);
+        for (int i = exeBarPosition + 1; i < 20; i++) {
+            exeBarLabels[i].setText("");
+        }
+    }
+
     public void setupSpeed() {
         // create panel
-        panels[2] = new JPanel();
-        panels[2].setSize(420, 200);
-        panels[2].setBorder(BorderFactory.createTitledBorder("Speed"));
-        panels[2].setLayout(gLayout);
+        panelAttributes(2, "Thread Attributes", gLayout);
         // create components 
-        speedSlider.setPreferredSize(new Dimension(200, 43));
-        speedSlider.setMajorTickSpacing(1);
-        speedSlider.setMinorTickSpacing(1);
-        speedSlider.setPaintTicks(true);
-        speedSlider.setPaintLabels(true);
-        JLabel speedLabel = new JLabel("<html>Speed : <font color='orange'>10</font></html>");
-        // add listener event
-        speedSlider.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                int val = ((JSlider)e.getSource()).getValue();
-                speedLabel.setText("<html>Speed : <font color='orange'> " + val + "</font></html>");
-                speedValue = 11 - ((JSlider)e.getSource()).getValue();
-                mainWindow.repaint();
-                mainWindow.revalidate();
-                // set new speeds for threads
-                for (MyThreads t:listThreads) {
-                    t.setGlobalSpeed(speedValue);
-                    t.activeBorder();
-                }
-            }
-        });
+        prioritySlider.setBackground(new Color(255,140,0));
+        workSlider.setBackground(new Color(128,128,128));
+        prioritySlider.setPreferredSize(new Dimension(200, 43));
+        workSlider.setPreferredSize(new Dimension(200, 43));
+        prioritySlider.setMinorTickSpacing(1);
+        prioritySlider.setPaintTicks(true);
+        prioritySlider.setSnapToTicks(true);
+        workSlider.setMinorTickSpacing(1);
+        workSlider.setPaintTicks(true);
+        workSlider.setSnapToTicks(true);
         // add panel components
-        panels[2].add(speedSlider);
-        panels[2].add(speedLabel);
+        panels[2].add(prioritySlider);
+        panels[2].add(workSlider);
         // add panel to main panel
         gbc.gridx = 1;
         gbc.gridy = 0;
         panels[0].add(panels[2], gbc);
     }
 
+    public void panelAttributes(int i, String name, GridLayout l) {
+        panels[i] = new JPanel();
+        panels[i].setSize(420, 200);
+        panels[i].setOpaque(true);
+        panels[i].setBackground(Color.darkGray);
+        panels[i].setBorder(BorderFactory.createTitledBorder("<html><font color='white'>" + name + "</font></html>"));
+        if (i == 4) {
+            panels[i].setLayout(gbLayout);
+        } else {
+            panels[i].setLayout(l);
+        }
+       
+    }
+
     public void setupActive() {
         // create panel
-        panels[3] = new JPanel();
-        panels[3].setSize(420, 200);
-        panels[3].setBorder(BorderFactory.createTitledBorder("Active Threads"));
-        panels[3].setLayout(gLayout);
+        panelAttributes(3, "Active Threads", gLayout);
         // create components 
         JLabel activeLabel = new JLabel("<html>Threads : <font color='orange'>2</font></html>");
         activeSlider.setPreferredSize(new Dimension(200, 43));
@@ -143,7 +229,6 @@ public class Interface extends JFrame {
                 activeLabel.setText("<html>Threads : <font color='orange'> " + val + "</font></html>");
                 mainWindow.repaint();
                 mainWindow.revalidate();
-                //resetThreads(); this should be replaced with preamptive approach
                 int amount = panels[5].getComponentCount();
                 int newVal = activeSlider.getValue();
                 if (preemptiveLabel.getText() == "Non-Preemptive" && !start.isEnabled()) {
@@ -164,6 +249,9 @@ public class Interface extends JFrame {
                         }
                     }
                 }
+                for (MyThreads t : listThreads) {
+                    t.setTickThread(amount);
+                }
             }
         });
         // add panel components
@@ -177,17 +265,14 @@ public class Interface extends JFrame {
 
     public void setupButton() {
         // create panel
-        panels[4] = new JPanel();
-        panels[4].setSize(420, 200);
-        panels[4].setBorder(BorderFactory.createTitledBorder("Go!"));
-        panels[4].setLayout(gbLayout);
+        panelAttributes(4, "Go!", gLayout);
         // create panel components
-        start = new JButton("Start");
-        stop = new JButton("Stop");
-        reset = new JButton("Reset");
-        start.setPreferredSize(new Dimension(100, 86));
-        stop.setPreferredSize(new Dimension(100, 86));
-        reset.setPreferredSize(new Dimension(100, 86));
+        start = new JButton("<html><font color='white'>Start</font></html>");
+        stop = new JButton("<html><font color='white'>Stop</font></html>");
+        reset = new JButton("<html><font color='white'>Reset</font></html>");
+        buttonAttributes(start);
+        buttonAttributes(stop);
+        buttonAttributes(reset);
         // button action listeners
         start.addActionListener(new ActionListener(){  
             public void actionPerformed(ActionEvent e){  
@@ -231,11 +316,14 @@ public class Interface extends JFrame {
                 scheme.suspendScheme();
             }  
         }); 
-        reset.addActionListener(new ActionListener(){  
+        reset.addActionListener(new ActionListener(){ 
             public void actionPerformed(ActionEvent e){  
-                schemeStarted = false;
-                scheme.terminateScheme();
-                resetThreads(activeSlider.getValue());
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        new Interface();
+                    }
+                });
+                mainInterface.dispose();
             }  
         }); 
         // add panel components
@@ -246,6 +334,14 @@ public class Interface extends JFrame {
         gbc.gridx = 3;
         gbc.gridy = 0;
         panels[0].add(panels[4], gbc);
+    }
+
+    public void buttonAttributes(JButton button) {
+        button.setOpaque(true);
+        button.setBackground(Color.darkGray);
+        button.setHorizontalAlignment(SwingConstants.CENTER);
+        button.setBorder(border);
+        button.setPreferredSize(new Dimension(100, 86));
     }
 
     public void buttonStart() {
@@ -264,21 +360,19 @@ public class Interface extends JFrame {
 
     public void setupThread() {
         // create panel
-        panels[5] = new JPanel();
-        panels[5].setSize(420, 200);
-        panels[5].setBorder(BorderFactory.createTitledBorder("Threads"));
-        panels[5].setLayout(gLayout2);
+        panelAttributes(5, "Threads", gLayout2);
         createAddThread();
     }
 
     public void createAddThread() {
         // create components
         for (int i = 0; i < activeSlider.getValue(); i++) {
-            listThreads.add(new MyThreads(i, speedValue));
+            listThreads.add(new MyThreads(i, speedValue, mainInterface));
         }
         // add components to panel
         for (MyThreads t:listThreads) {
             panels[5].add(t.getGUI());
+            t.setTickThread(2);
         }
         mainWindow.repaint();
         mainWindow.revalidate();
@@ -338,7 +432,7 @@ public class Interface extends JFrame {
         if (schemeStarted) {
             scheme.threadUpdateScheme();
         }
-        listThreads.add(new MyThreads(listThreads.size(), speedValue));
+        listThreads.add(new MyThreads(listThreads.size(), speedValue, mainInterface, prioritySlider.getValue(),workSlider.getValue()));
         scheme.setThreads(listThreads, listThreads.size());
         panels[5].add(listThreads.get(listThreads.size() - 1).getGUI());
         if (schemeStarted) {

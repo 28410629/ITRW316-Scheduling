@@ -1,7 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 import javax.swing.event.*;
+import javax.swing.plaf.ColorUIResource;
 
 public class MyThreads extends Thread implements Comparable<MyThreads>{
 
@@ -30,24 +30,33 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
     private boolean _reportTerminate = false;
     private boolean _priorityComparable = false;
     private int _multipleQueueLevel = 1;
+    private Interface _mainWindow;
 
-    public MyThreads(int threadID, int Speed) {
+    public MyThreads(int threadID, int Speed, Interface mainWindow) {
         super();
         createGUI(threadID);
         globalSpeed = Speed;
+        _mainWindow = mainWindow;
+    }
+
+    public MyThreads(int threadID, int Speed, Interface mainWindow, int Priority, int Worker) {
+        this(threadID, Speed, mainWindow);
+        prioritySlider.setValue(Priority);
+        workSlider.setValue(Worker);
     }
 
     public void createGUI(int id) {
         threadID = id;
         // create panel
         panel = new JPanel();
-        panel.setBorder(BorderFactory.createTitledBorder("Thread : " + threadID));
+        panel.setOpaque(true);
+        panel.setBackground(Color.darkGray);
+        panel.setBorder(BorderFactory.createTitledBorder("<html><font color='white'>Thread : " + threadID + "</font></html>"));
         panel.setLayout(gLayout);
         // create components 
-        progressBar = new JProgressBar(0, 100);
-        progressBar.setValue(0);
-        progressBar.setStringPainted(true);
+        colorProgressBar(id);
         activeBorder();
+        prioritySlider.setOpaque(true);
         prioritySlider.setBackground(new Color(255,140,0));
         workSlider.setBackground(new Color(128,128,128));
         updateActiveLabel();
@@ -70,6 +79,58 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
         panel.add(activeLabel);
     }
 
+    public void colorProgressBar(int threadID) {
+        Color color;
+        switch (threadID) {
+            case 0:
+                color = Color.pink;
+                break;
+            case 1:
+                color = Color.magenta;
+                break;
+            case 2:
+                color = Color.cyan;
+                break;
+            case 3:
+                color = Color.yellow;
+                break;
+            case 4:
+                color = Color.green;
+                break;
+            case 5:
+                color = Color.blue;
+                break;
+            case 6:
+                color = Color.orange;
+                break;
+            case 7:
+                color = Color.white;
+                break;
+            default:
+                color = Color.black;
+                break;
+        }
+        Color color2;
+        if (color == Color.blue) {
+            color2 = Color.white;
+        } else {
+            color2 = Color.black;
+        }
+        UIDefaults defaults = UIManager.getDefaults();
+        // the foreground color
+        defaults.put("ProgressBar.foreground", new ColorUIResource(color));
+        // the color used to render the text over the foreground color
+        defaults.put("ProgressBar.selectionForeground", new ColorUIResource(color2));
+        // the background color
+        defaults.put("ProgressBar.background", new ColorUIResource(Color.darkGray));
+        // the color used to render the text over the background color
+        defaults.put("ProgressBar.selectionBackground", new ColorUIResource(Color.white));
+        progressBar = new JProgressBar(0, 100);
+        progressBar.setValue(0);
+        progressBar.setStringPainted(true);
+        progressBar.setBorderPainted(false);
+    }
+
     public void updateActiveLabel() {
         _workIntensity = workSlider.getValue();
         _priority = prioritySlider.getValue();
@@ -78,14 +139,30 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
 
     public void activeBorder() {
         if (active) {
-            panel.setBorder(BorderFactory.createTitledBorder("<html>Thread : " + threadID + ", <font color='red'>ACTIVE</font>, <font color='purple'>" + this.getRemainingTime() + " miliseconds</font></html>"));
+            panel.setBorder(BorderFactory.createTitledBorder("<html><font color='white'>Thread : " + threadID + ",  </font><font color='red'>ACTIVE</font><font color='white'>,  " + this.getRemainingTime() + " miliseconds</font></html>"));
             panel.repaint();
             panel.revalidate();
         } else {
-            panel.setBorder(BorderFactory.createTitledBorder("<html>Thread : " + threadID + ", <font color='blue'>INACTIVE</font>, <font color='purple'>" + this.getRemainingTime() + " miliseconds</font></html>"));
+            panel.setBorder(BorderFactory.createTitledBorder("<html><font color='white'>Thread : " + threadID + ",  </font><font color='blue'>INACTIVE</font><font color='white'>,  " + this.getRemainingTime() + " miliseconds</font></html>"));
             panel.repaint();
             panel.revalidate();
         }
+    }
+
+    public void setTickThread(int amount) {
+        if (amount <= 4) {
+            prioritySlider.setMinorTickSpacing(1);
+            prioritySlider.setPaintTicks(true);
+            prioritySlider.setSnapToTicks(true);
+            workSlider.setMinorTickSpacing(1);
+            workSlider.setPaintTicks(true);
+            workSlider.setSnapToTicks(true);
+        } else {
+            prioritySlider.setPaintTicks(false);
+            workSlider.setPaintTicks(false);
+        }
+        panel.repaint();
+        panel.revalidate();
     }
 
     public void setGlobalSpeed(int spd) {
@@ -151,7 +228,7 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
                 Thread.currentThread().interrupt();
             }
             if(i == 100) {
-                panel.setBorder(BorderFactory.createTitledBorder("<html>Thread : " + threadID + ", <font color='green'>FINISHED</font></html>"));
+                panel.setBorder(BorderFactory.createTitledBorder("<html><font color='white'>Thread : " + threadID + ",  </font><font color='green'>FINISHED</font></html>"));
                 panel.repaint();
                 panel.revalidate();
                 isTerminated = true;
