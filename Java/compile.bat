@@ -1,1 +1,2 @@
-javac *.java
+javac *.java -d .\Class_Files\
+pause

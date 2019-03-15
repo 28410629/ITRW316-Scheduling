@@ -132,17 +132,6 @@ public class ThreadScheming {
         }
     }
 
-    public void terminateScheme() {
-        _activeScheme.stop();
-        for (MyThreads t:_listThreads) {
-            try {
-                t.stop();
-            } catch (Exception e) {
-                System.out.println("[ ERR ] Thread Stop : " + t.getThreadID());
-            }
-        }
-    }
-
     public void threadUpdateScheme() {
         _activeScheme.stop();
         for (MyThreads t:_listThreads) {

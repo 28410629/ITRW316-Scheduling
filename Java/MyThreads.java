@@ -226,7 +226,7 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
 
     public void setPriorityComparable(boolean priorityComparable) {
         _priorityComparable = priorityComparable;
-        System.out.println("Thread " + threadID + " : Priority comparable = " + _priorityComparable);
+        //System.out.println("Thread " + threadID + " : Priority comparable = " + _priorityComparable);
     }
 
     @Override
@@ -258,10 +258,10 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
     @Override
     public int compareTo (MyThreads other) {
         if (_priorityComparable) {
-            System.out.println("Thread " + threadID + " : Priority comparable used.");
+            //System.out.println("Thread " + threadID + " : Priority comparable used.");
             return Integer.compare(this._priority, other._priority);
         } else {
-            System.out.println("Thread " + threadID + " : Shortest remaining time comparable used.");
+            //System.out.println("Thread " + threadID + " : Shortest remaining time comparable used.");
             return Integer.compare(this.getRemainingTime(), other.getRemainingTime());
         } 
     }
