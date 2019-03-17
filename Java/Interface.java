@@ -60,7 +60,6 @@ public class Interface extends JFrame {
     int speedValue = 1; // initial speed value
     ThreadScheming scheme;
     JLabel preemptiveLabel;
-    boolean schemeStarted = false;
     private int exeBarPosition = -1;
     private JLabel[] exeBarLabels = new JLabel[20];
     Border border = BorderFactory.createLineBorder(Color.white, 1);
@@ -247,12 +246,17 @@ public class Interface extends JFrame {
                     activeSlider.setValue(amount);
                     mainWindow.repaint();
                     mainWindow.revalidate();
+                } else if (!stop.isEnabled() && start.getText().contains("Resume")) {
+                    activeLabel.setText("<html><font color='orange'>Do whilst execution, keep it interesting.</font></html>");
+                    activeSlider.setValue(amount);
+                    mainWindow.repaint();
+                    mainWindow.revalidate();
                 } else {
                     if (amount > newVal) {
                         // remove threads
                         if (stop.isEnabled() && start.isEnabled() && reset.isEnabled()) {
                             for (int i = 1; i <= (amount - newVal); i++) {
-                                removeLastThread();
+                                editThreads(true);
                             }
                         } else {
                             activeSlider.setValue(amount);
@@ -262,7 +266,7 @@ public class Interface extends JFrame {
                     } else {
                         // add threads
                         for (int i = 1; i <= (newVal - amount); i++) {
-                            addLastThread();
+                            editThreads(false);
                         }
                     }
                 }
@@ -293,43 +297,38 @@ public class Interface extends JFrame {
         // button action listeners
         start.addActionListener(new ActionListener(){  
             public void actionPerformed(ActionEvent e){  
-                if (start.getText() == "Resume") {
-                    schemeStarted = true;
-                    buttonStart();
-                    scheme.resumeScheme();                  
-                } else {
-                    schemeStarted = true;
-                    buttonStart();
-                    scheme.setThreads(listThreads, listThreads.size());
-                    switch (threadSelection.getSelectedItem().toString()) {
-                        case "First-Come First-Serve":
-                            scheme.FCFS();
-                            break; 
-                        case "Round-Robin":
-                            scheme.RR();
-                            break;
-                        case "Shortest Job First":
-                            scheme.SJF();
-                            break;
-                        case "Shortest Remaining Time":
-                            scheme.SRT();
-                            break;
-                        case "Priority Scheduling":
-                            scheme.PS();
-                            break; 
-                        case "Multiple Queue":
-                            scheme.MQ();
-                            break; 
-                        default:
-                            break;
-                    }
+                if (!start.getText().contains("Resume")) {
+                    System.out.println(threadSelection.getSelectedItem().toString());            
+                }
+                buttonStart();
+                scheme.setThreads(listThreads, listThreads.size());
+                switch (threadSelection.getSelectedItem().toString()) {
+                    case "First-Come First-Serve":
+                        scheme.FCFS();
+                        break; 
+                    case "Round-Robin":
+                        scheme.RR();
+                        break;
+                    case "Shortest Job First":
+                        scheme.SJF();
+                        break;
+                    case "Shortest Remaining Time":
+                        scheme.SRT();
+                        break;
+                    case "Priority Scheduling":
+                        scheme.PS();
+                        break; 
+                    case "Multiple Queue":
+                        scheme.MQ();
+                        break; 
+                    default:
+                        break;
                 }
             }  
         });  
         stop.addActionListener(new ActionListener(){  
             public void actionPerformed(ActionEvent e){  
                 buttonStop();
-                schemeStarted = false;
                 scheme.suspendScheme();
             }  
         }); 
@@ -366,6 +365,7 @@ public class Interface extends JFrame {
         start.setEnabled(false);
         stop.setEnabled(true);
         reset.setEnabled(false);
+        threadSelection.setEnabled(false);
     }
 
     public void buttonStop() {
@@ -411,72 +411,40 @@ public class Interface extends JFrame {
         createAddThread();
     }
 
-    public void removeLastThread() {
-        if (schemeStarted) {
+    public void editThreads(boolean remove) {
+        String selection = threadSelection.getSelectedItem().toString();
+        if (selection == "Shortest Remaining Time" || selection == "Priority Scheduling") {
             scheme.threadUpdateScheme();
-        }
-        panels[5].remove(listThreads.get(listThreads.size() - 1).getGUI());
-        listThreads.remove(listThreads.size() - 1);
-        scheme.setThreads(listThreads, listThreads.size());
-        if (schemeStarted) {
-            switch (threadSelection.getSelectedItem().toString()) {
-                case "First-Come First-Serve":
-                    scheme.FCFS();
-                    break; 
-                case "Round-Robin":
-                    scheme.RR();
-                    break;
-                case "Shortest Job First":
-                    scheme.SJF();
-                    break;
-                case "Shortest Remaining Time":
-                    scheme.SRT();
-                    break;
-                case "Priority Scheduling":
-                    scheme.PS();
-                    break; 
-                case "Multiple Queue":
-                    break; 
-                default:
-                    break;
+            if (remove) {
+                removeLT();
+            } else {
+                addLT();
             }
-        }
+            if (selection == "Shortest Remaining Time") {
+                scheme.SRT();
+            } else {
+                scheme.PS();                
+            }
+        } else {
+            if (remove) {
+                removeLT();
+            } else {
+                addLT();
+            }
+        }  
         mainWindow.repaint();
         mainWindow.revalidate();
     }
 
-    public void addLastThread() {
-        if (schemeStarted) {
-            scheme.threadUpdateScheme();
-        }
+    private void addLT() {
         listThreads.add(new MyThreads(listThreads.size(), speedValue, mainInterface, prioritySlider.getValue(),workSlider.getValue()));
         scheme.setThreads(listThreads, listThreads.size());
         panels[5].add(listThreads.get(listThreads.size() - 1).getGUI());
-        if (schemeStarted) {
-            switch (threadSelection.getSelectedItem().toString()) {
-                case "First-Come First-Serve":
-                    scheme.FCFS();
-                    break; 
-                case "Round-Robin":
-                    scheme.RR();
-                    break;
-                case "Shortest Job First":
-                    scheme.SJF();
-                    break;
-                case "Shortest Remaining Time":
-                    scheme.SRT();
-                    break;
-                case "Priority Scheduling":
-                    scheme.PS();
-                    break; 
-                case "Multiple Queue":
-                    scheme.MQ();
-                    break; 
-                default:
-                    break;
-            }
-        }
-        mainWindow.repaint();
-        mainWindow.revalidate();
+    }
+
+    private void removeLT() {
+        panels[5].remove(listThreads.get(listThreads.size() - 1).getGUI());
+        listThreads.remove(listThreads.size() - 1);
+        scheme.setThreads(listThreads, listThreads.size());
     }
 }

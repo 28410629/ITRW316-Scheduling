@@ -1,6 +1,7 @@
 
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -18,8 +19,10 @@ public class ThreadScheming {
     private MyThreads _activeThread;
     private boolean _schemeWasSuspendedT = false;
     private boolean _schemeWasSuspendedQ = false;
+    private boolean _schemeWasSuspendedC = false;
     private int _schemeWasSuspendedThread;
     private int _schemeWasSuspendedQuantum;
+    private int _schemeWasSuspendedCount;
     private Interface _mainInterface;
     
     // STASTISTICS
@@ -38,28 +41,34 @@ public class ThreadScheming {
 
     // METHODS
 
-    public void writeToFile(String filename, String message) {
-        Writer writer = null;
-
-        try {
-            writer = new BufferedWriter(new OutputStreamWriter(
-            new FileOutputStream(filename + ".txt"), "utf-8"));
-            writer.write(message);
-        } catch (IOException ex) {
-            System.out.println("[  ERR  ] Writing stastitics to file.");
-        } finally {
-            try {
-                writer.close();
-            } catch (Exception ex) {
-                System.out.println("[  ERR  ] Couldn't close file.");
-            }
-        }
-    }
+    public static void resumeAt(int value, String what) 
+    { 
+        String str = what + " resumes at: " + value + "\n";
+        try { 
+            BufferedWriter out = new BufferedWriter(new FileWriter("stop_resume.txt", true)); 
+            out.write(str); 
+            out.close(); 
+        } 
+        catch (IOException e) { 
+            System.out.println("exception occoured" + e); 
+        } 
+    } 
 
     private int determineThreadI() { // determines where for loop starts
         if (_schemeWasSuspendedT) {
             _schemeWasSuspendedT = false;
+            resumeAt(_schemeWasSuspendedThread, "Thread");
             return _schemeWasSuspendedThread;
+        } else {
+            return 0;
+        }
+    }
+
+    private int determineCount() { // determines where for loop starts
+        if (_schemeWasSuspendedC) {
+            _schemeWasSuspendedC = false;
+            resumeAt(_schemeWasSuspendedCount, "Count");
+            return _schemeWasSuspendedCount;
         } else {
             return 0;
         }
@@ -68,6 +77,7 @@ public class ThreadScheming {
     private int determineQuantumI() { // determines where for loop starts
         if (_schemeWasSuspendedQ) {
             _schemeWasSuspendedQ = false;
+            resumeAt(_schemeWasSuspendedQuantum, "Quantum");
             return _schemeWasSuspendedQuantum;
         } else {
             return 0;
@@ -107,28 +117,20 @@ public class ThreadScheming {
                 count++;
             } 
         }
-        System.out.println("Threads " + count + " completed of " + _listThreads.size() + ".");
         return count;
     }
 
     public void suspendScheme() {
         _schemeWasSuspendedT = true;
-        _activeScheme.suspend();
+        _schemeWasSuspendedC = true;
+        _schemeWasSuspendedQ = true;
+        _activeScheme.stop();
         for (MyThreads t:_listThreads) {
             try {
                 t.suspend();
             } catch (Exception e) {
                 System.out.println("[ ERR ] Thread Suspend : " + t.getThreadID());
             }
-        }
-    }
-
-    public void resumeScheme() {
-        _activeScheme.resume();
-        try {
-            _activeThread.resume();
-        } catch (Exception e) {
-            System.out.println("[ ERR ] Thread Resume : " + _activeThread.getThreadID());
         }
     }
 
@@ -200,14 +202,17 @@ public class ThreadScheming {
     }
 
     private void schemeWaitForThread(int i) {
-        System.out.println("Scheme waiting for thread to finish.");
+        _schemeWasSuspendedCount = determineCount();
         while (_listThreads.get(i).isAlive()) {
             try {
+                System.out.print("Scheme waiting for Thread " + _activeThread.getThreadID() + " to finish : " + _schemeWasSuspendedCount + "\r");
                 Thread.sleep(1); // less work intensive on CPU
+                _schemeWasSuspendedCount++;
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
             }
         }
+        System.out.println();
     }
 
     // THREADS SCHEMES
@@ -217,7 +222,7 @@ public class ThreadScheming {
             @Override
             public void run() {
                 startTime = System.nanoTime();
-                methodFCFS(); // start scheme
+                methodFCFS(false); // start scheme
                 endTime = System.nanoTime();
                 System.out.println("Execution time in milliseconds : " + ((endTime - startTime) / 1000000)); 
             }
@@ -226,14 +231,19 @@ public class ThreadScheming {
         t1.start();
     }
 
-    private void methodFCFS() {
+    private void methodFCFS(boolean isSJF) {
         buttonStart();
-        int count = 0;
-        while (count < _amountThreads) {
-            schemeSetActiveThread(count); // set active thread
-            schemeThreadStart(count); // start thread
-            schemeWaitForThread(count); // wait for thread to finish
-            count++; // move to next
+        while (getActiveThreads() < _amountThreads) {
+            for (int i = determineThreadI(); i < _amountThreads; i++) {
+                if (isSJF) {
+                    comparableSort(false); // sort thread on shortest remaining time
+                }
+                if (!_listThreads.get(i).isTerminated()) {
+                    schemeSetActiveThread(i); // set active thread
+                    schemeThreadStart(i); // start thread
+                    schemeWaitForThread(i); // wait for thread to finish
+                }
+            }
         }
         buttonFinished();
     }
@@ -243,7 +253,7 @@ public class ThreadScheming {
             @Override
             public void run() {
                 startTime = System.nanoTime();
-                methodMQ(); // run scheme
+                methodRR(true); // run scheme
                 endTime = System.nanoTime();
                 System.out.println("Execution time in milliseconds : " + ((endTime - startTime) / 1000000)); 
             }
@@ -252,28 +262,13 @@ public class ThreadScheming {
         t4.start();
     }
 
-    private void methodMQ() {
-        while (getActiveThreads() < _amountThreads) { // run while their are unfinished threads
-            buttonStart(); // set buttons to active scheme config
-            for (int i = determineThreadI(); i < _amountThreads; i++) {
-                schemeSetActiveThread(i); // set active thread
-                if (!_listThreads.get(i).isTerminated()) { // skip thread if finished
-                    schemeThreadStart(i); // start thread
-                    schemeThreadMultipleQuantum(); // thread quantum, in miliseconds
-                    schemeThreadSuspend(i); // suspend thread
-                }   
-            }
-        }
-        buttonFinished(); // set buttons to stopped scheme config
-    }
-
     public void PS() { // priority-scheduling
         Thread t4 = new Thread(new Runnable() {
             @Override
             public void run() {
                 startTime = System.nanoTime();
                 comparableSort(true); // sort thread on priority
-                methodPS(); // start scheme
+                methodSRT(true); // start scheme
                 endTime = System.nanoTime();
                 System.out.println("Execution time in milliseconds : " + ((endTime - startTime) / 1000000));               
             }
@@ -281,29 +276,13 @@ public class ThreadScheming {
         _activeScheme = t4;
         t4.start();
     }
-
-    private void methodPS() {
-        while (getActiveThreads() < _amountThreads) { // run while their are unfinished threads
-            buttonStart(); // set buttons to active scheme config
-            for (int i = determineThreadI(); i < _amountThreads; i++) {
-                schemeSetActiveThread(i); // set active thread
-                if (!_listThreads.get(i).isTerminated()) { // skip thread if finished
-                    schemeThreadStart(i); // start thread
-                    schemeWaitForThread(i); // wait for thread to finish
-                    schemeThreadSuspend(i); // suspend thread
-                }  
-                comparableSort(true); // turn priority comparable on 
-            }
-        }
-        buttonFinished(); // set buttons to stopped scheme config
-    }
     
     public void RR() { // round-robin
         Thread t2 = new Thread(new Runnable() {
             @Override
             public void run() {
                 startTime = System.nanoTime();
-                methodRR(); // run scheme
+                methodRR(false); // run scheme
                 endTime = System.nanoTime();
                 System.out.println("Execution time in milliseconds : " + ((endTime - startTime) / 1000000));
             }
@@ -312,14 +291,17 @@ public class ThreadScheming {
         t2.start();
     } 
 
-    private void methodRR() {
+    private void methodRR(boolean isMQ) {
         while (getActiveThreads() < _amountThreads) { // run while their are unfinished threads
-            buttonStart(); // set buttons to active scheme config
             for (int i = determineThreadI(); i < _amountThreads; i++) {
                 schemeSetActiveThread(i); // set active thread
                 if (!_listThreads.get(i).isTerminated()) { // skip thread if finished
                     schemeThreadStart(i); // start thread
-                    schemeThreadQuantum(600); // thread quantum, in miliseconds
+                    if (isMQ) {
+                        schemeThreadMultipleQuantum(); // thread quantum, in miliseconds
+                    } else {
+                        schemeThreadQuantum(600); // thread quantum, in miliseconds
+                    }
                     schemeThreadSuspend(i); // suspend thread
                 }   
             }
@@ -332,8 +314,7 @@ public class ThreadScheming {
             @Override
             public void run() {
                 startTime = System.nanoTime();
-                comparableSort(false); // sort thread on shortest remaining time
-                methodFCFS(); // uses first-come-first-serve scheme, start
+                methodFCFS(true); // uses first-come-first-serve scheme, start
                 endTime = System.nanoTime();
                 System.out.println("Execution time in milliseconds : " + ((endTime - startTime) / 1000000));
             }
@@ -346,9 +327,8 @@ public class ThreadScheming {
         Thread t4 = new Thread(new Runnable() {
             @Override
             public void run() {
-                comparableSort(false); // turn shortest comparable on
                 startTime = System.nanoTime();
-                methodSRT(); // run scheme
+                methodSRT(false); // run scheme
                 endTime = System.nanoTime();
                 System.out.println("Execution time in milliseconds : " + ((endTime - startTime) / 1000000));
             }
@@ -357,17 +337,20 @@ public class ThreadScheming {
         t4.start();
     }
 
-    private void methodSRT() {
+    private void methodSRT(boolean isPS) {
         while (getActiveThreads() < _amountThreads) { // run while their are unfinished threads
-            buttonStart(); // set buttons to active scheme config
             for (int i = determineThreadI(); i < _amountThreads; i++) {
+                if (isPS) {
+                    comparableSort(true);
+                } else {
+                    comparableSort(false);
+                }
                 schemeSetActiveThread(i); // set active thread
                 if (!_listThreads.get(i).isTerminated()) { // skip thread if finished
                     schemeThreadStart(i); // start thread
                     schemeWaitForThread(i); // wait for thread to finish
                     schemeThreadSuspend(i); // suspend thread
                 }  
-                comparableSort(false); // sort
             }
         }
         buttonFinished(); // set buttons to stopped scheme config
