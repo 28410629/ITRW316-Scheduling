@@ -37,7 +37,7 @@ public class Interface extends JFrame {
     GridBagConstraints gbc = new GridBagConstraints();
     GridLayout gLayout = new GridLayout(0,1);
     GridLayout gLayout2 = new GridLayout(0,4);
-    JComboBox threadSelection;
+    JComboBox<String> threadSelection;
     String[] threadSchemes = { "First-Come First-Serve", "Shortest Job First", "Shortest Remaining Time", "Multiple Queue", "Round-Robin", "Priority Scheduling" };
     JButton start;
     JButton stop;
@@ -101,7 +101,7 @@ public class Interface extends JFrame {
         panelAttributes(1, "Thread Scheming", gLayout);
         // create panel components
         preemptiveLabel = new JLabel("<html><font color='white'>Batch, nonpreemptive.</font></html>");
-        threadSelection = new JComboBox(threadSchemes);
+        threadSelection = new JComboBox<String>(threadSchemes);
         threadSelection.setPreferredSize(new Dimension(200,43));
         threadSelection.setBackground(Color.darkGray);
         threadSelection.setForeground(Color.white);
@@ -413,7 +413,7 @@ public class Interface extends JFrame {
     public void createAddThread() {
         // create components
         for (int i = 0; i < activeSlider.getValue(); i++) {
-            listThreads.add(new MyThreads(i, speedValue, mainInterface));
+            listThreads.add(new MyThreads(i, speedValue));
         }
         // add components to panel
         for (MyThreads t:listThreads) {
@@ -422,22 +422,6 @@ public class Interface extends JFrame {
         }
         mainWindow.repaint();
         mainWindow.revalidate();
-    }
-
-    public void resetThreads(int amount) {
-        // terminate existing threads
-        for (MyThreads t:listThreads) {
-            t.terminate();;
-        }
-        listThreads.clear();
-        // remove components from thread panel
-        start.setText("Start");
-        start.setEnabled(true);
-        panels[5].removeAll();
-        mainWindow.repaint();
-        mainWindow.revalidate();
-        // create threads components and add them to panel
-        createAddThread();
     }
 
     public void editThreads(boolean remove) {
@@ -471,7 +455,7 @@ public class Interface extends JFrame {
     }
 
     private void addLT() {
-        listThreads.add(new MyThreads(listThreads.size(), speedValue, mainInterface, prioritySlider.getValue(),workSlider.getValue()));
+        listThreads.add(new MyThreads(listThreads.size(), speedValue, prioritySlider.getValue(),workSlider.getValue()));
         scheme.setThreads(listThreads, listThreads.size());
         panels[5].add(listThreads.get(listThreads.size() - 1).getGUI());
     }

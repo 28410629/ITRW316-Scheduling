@@ -1,7 +1,5 @@
 
 import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 
 import javax.swing.BorderFactory;
@@ -21,13 +19,9 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
     private int threadID;
     private JProgressBar progressBar;
     private GridLayout gLayout = new GridLayout(0,1);
-    private GridBagLayout gbLayout = new GridBagLayout();
-    private GridBagConstraints gbc = new GridBagConstraints();
     private JLabel activeLabel = new JLabel("Inactive");
     private boolean active = false;
-    private boolean finished = false;
     private int globalSpeed;
-    private volatile boolean running = true;
     private static final int priorityMin = 0;
     private static final int priorityMax = 10;
     private static final int priorityInit = 0; 
@@ -42,18 +36,16 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
     private boolean _reportTerminate = false;
     private boolean _priorityComparable = false;
     private int _multipleQueueLevel = 1;
-    private Interface _mainWindow;
     private boolean _schemeStarted = false;
 
-    public MyThreads(int threadID, int Speed, Interface mainWindow) {
+    public MyThreads(int threadID, int Speed) {
         super();
         createGUI(threadID);
         globalSpeed = Speed;
-        _mainWindow = mainWindow;
     }
 
-    public MyThreads(int threadID, int Speed, Interface mainWindow, int Priority, int Worker) {
-        this(threadID, Speed, mainWindow);
+    public MyThreads(int threadID, int Speed, int Priority, int Worker) {
+        this(threadID, Speed);
         prioritySlider.setValue(Priority);
         workSlider.setValue(Worker);
     }
@@ -216,10 +208,6 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
     public JPanel getGUI() {
         activeBorder();
         return panel;
-    }
-    
-    public void terminate() {
-        running = false;
     }
 
     public boolean isTerminated() {
