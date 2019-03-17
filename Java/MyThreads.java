@@ -43,6 +43,7 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
     private boolean _priorityComparable = false;
     private int _multipleQueueLevel = 1;
     private Interface _mainWindow;
+    private boolean _schemeStarted = false;
 
     public MyThreads(int threadID, int Speed, Interface mainWindow) {
         super();
@@ -77,13 +78,22 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
         // add listener events
         workSlider.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                updateActiveLabel();
-                activeBorder();
+                if(_schemeStarted) {
+                    workSlider.setValue(_workIntensity);
+                } else {
+                    updateActiveLabel();
+                    activeBorder();
+                }
             }
         });
         prioritySlider.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                updateActiveLabel();
+                if(_schemeStarted) {
+                    prioritySlider.setValue(_priority);
+                } else {
+                    updateActiveLabel();
+                    activeBorder();
+                }
             }
         });
         // add panel components
@@ -153,11 +163,11 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
 
     public void activeBorder() {
         if (active) {
-            panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.white),"<html><font color='white'>Thread : " + threadID + ",  </font><font color='red'>ACTIVE</font><font color='white'>,  " + this.getRemainingTime() + " miliseconds</font></html>"));
+            panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.white),"<html><font color='white'>Thread : " + threadID + ",  </font><font color='red'>ACTIVE</font><font color='white'>,  Estimated " + this.getRemainingTime() + " ms</font></html>"));
             panel.repaint();
             panel.revalidate();
         } else {
-            panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.white),"<html><font color='white'>Thread : " + threadID + ",  </font><font color='blue'>INACTIVE</font><font color='white'>,  " + this.getRemainingTime() + " miliseconds</font></html>"));
+            panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.white),"<html><font color='white'>Thread : " + threadID + ",  </font><font color='aqua'>INACTIVE</font><font color='white'>,  Estimated " + this.getRemainingTime() + " ms</font></html>"));
             panel.repaint();
             panel.revalidate();
         }
@@ -218,6 +228,10 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
 
     public void setReportTerminate(boolean reportTerminate) {
         _reportTerminate = reportTerminate;
+    }
+
+    public void setSchemeStarted(boolean schemeStarted) {
+        _schemeStarted = schemeStarted;
     }
 
     public boolean getReportTerminate() {

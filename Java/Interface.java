@@ -38,7 +38,7 @@ public class Interface extends JFrame {
     GridLayout gLayout = new GridLayout(0,1);
     GridLayout gLayout2 = new GridLayout(0,4);
     JComboBox threadSelection;
-    String[] threadSchemes = { "First-Come First-Serve", "Shortest Job First", "Shortest Remaining Time", "Round-Robin", "Priority Scheduling", "Multiple Queue" };
+    String[] threadSchemes = { "First-Come First-Serve", "Shortest Job First", "Shortest Remaining Time", "Multiple Queue", "Round-Robin", "Priority Scheduling" };
     JButton start;
     JButton stop;
     JButton reset;
@@ -97,17 +97,23 @@ public class Interface extends JFrame {
         // create panel
         panelAttributes(1, "Thread Scheming", gLayout);
         // create panel components
-        preemptiveLabel = new JLabel("<html><font color='white'>Non-Preemptive</font></html>");
+        preemptiveLabel = new JLabel("<html><font color='white'>Batch, nonpreemptive.</font></html>");
         threadSelection = new JComboBox(threadSchemes);
         threadSelection.setPreferredSize(new Dimension(200,43));
         threadSelection.setBackground(Color.darkGray);
         threadSelection.setForeground(Color.white);
         threadSelection.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                if (threadSelection.getSelectedItem().toString() == "First-Come First-Serve" || threadSelection.getSelectedItem().toString() == "Shortest Job First") {
-                    preemptiveLabel.setText("<html><font color='white'>Non-Preemptive</font></html>");
-                } else {
-                    preemptiveLabel.setText("<html><font color='white'>Preemptive</font></html>");
+                if (!start.getText().contains("Active") || !start.getText().contains("Resume")) {
+                    if (threadSelection.getSelectedItem().toString() == "First-Come First-Serve" || threadSelection.getSelectedItem().toString() == "Shortest Job First") {
+                        preemptiveLabel.setText("<html><font color='white'>Batch, nonpreemptive.</font></html>");
+                    } else if (threadSelection.getSelectedItem().toString() == "Shortest Remaining Time") {
+                        preemptiveLabel.setText("<html><font color='white'>Batch, preemptive.</font></html>");
+                    } else {
+                        preemptiveLabel.setText("<html><font color='white'>Interactive, preemptive.</font></html>");
+                    }
+                    mainWindow.repaint();
+                    mainWindow.revalidate();
                 }
             }
         });
@@ -302,6 +308,11 @@ public class Interface extends JFrame {
                 }
                 buttonStart();
                 scheme.setThreads(listThreads, listThreads.size());
+                if (start.getText().contains("Active") || start.getText().contains("Resume")) {
+                    for (MyThreads t : listThreads) {
+                        t.setSchemeStarted(true);
+                    }
+                }
                 switch (threadSelection.getSelectedItem().toString()) {
                     case "First-Come First-Serve":
                         scheme.FCFS();
@@ -365,7 +376,6 @@ public class Interface extends JFrame {
         start.setEnabled(false);
         stop.setEnabled(true);
         reset.setEnabled(false);
-        threadSelection.setEnabled(false);
     }
 
     public void buttonStop() {
@@ -413,7 +423,7 @@ public class Interface extends JFrame {
 
     public void editThreads(boolean remove) {
         String selection = threadSelection.getSelectedItem().toString();
-        if (selection == "Shortest Remaining Time" || selection == "Priority Scheduling" && start.getText().contains("Active")) {
+        if ((selection == "Shortest Remaining Time" || selection == "Priority Scheduling") && start.getText().contains("Active")) {
             scheme.threadUpdateScheme();
             if (remove) {
                 removeLT();
@@ -432,6 +442,11 @@ public class Interface extends JFrame {
                 addLT();
             }
         }  
+        if (start.getText().contains("Active") || start.getText().contains("Resume")) {
+            for (MyThreads t : listThreads) {
+                t.setSchemeStarted(true);
+            }
+        }
         mainWindow.repaint();
         mainWindow.revalidate();
     }
