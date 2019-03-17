@@ -413,7 +413,7 @@ public class Interface extends JFrame {
 
     public void editThreads(boolean remove) {
         String selection = threadSelection.getSelectedItem().toString();
-        if (selection == "Shortest Remaining Time" || selection == "Priority Scheduling") {
+        if (selection == "Shortest Remaining Time" || selection == "Priority Scheduling" && start.getText().contains("Active")) {
             scheme.threadUpdateScheme();
             if (remove) {
                 removeLT();

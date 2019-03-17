@@ -328,6 +328,7 @@ public class ThreadScheming {
             @Override
             public void run() {
                 startTime = System.nanoTime();
+                comparableSort(false); // sort
                 methodSRT(false); // run scheme
                 endTime = System.nanoTime();
                 System.out.println("Execution time in milliseconds : " + ((endTime - startTime) / 1000000));
@@ -339,7 +340,7 @@ public class ThreadScheming {
 
     private void methodSRT(boolean isPS) {
         while (getActiveThreads() < _amountThreads) { // run while their are unfinished threads
-            for (int i = determineThreadI(); i < _amountThreads; i++) {
+            for (int i = 0; i < _amountThreads; i++) {
                 if (isPS) {
                     comparableSort(true);
                 } else {
