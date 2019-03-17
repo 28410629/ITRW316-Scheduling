@@ -63,6 +63,9 @@ public class Interface extends JFrame {
     private int exeBarPosition = -1;
     private JLabel[] exeBarLabels = new JLabel[20];
     Border border = BorderFactory.createLineBorder(Color.white, 1);
+    private boolean stoppedExecBar = false;
+    private boolean startedSelectionScheme = false;
+    private int startedSelectionItem;
 
     public Interface() {
         super("28410629 - Thread Application");
@@ -104,17 +107,26 @@ public class Interface extends JFrame {
         threadSelection.setForeground(Color.white);
         threadSelection.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                if (!start.getText().contains("Active") || !start.getText().contains("Resume")) {
-                    if (threadSelection.getSelectedItem().toString() == "First-Come First-Serve" || threadSelection.getSelectedItem().toString() == "Shortest Job First") {
-                        preemptiveLabel.setText("<html><font color='white'>Batch, nonpreemptive.</font></html>");
-                    } else if (threadSelection.getSelectedItem().toString() == "Shortest Remaining Time") {
-                        preemptiveLabel.setText("<html><font color='white'>Batch, preemptive.</font></html>");
+                try {
+                    if (!startedSelectionScheme) {
+                        if (threadSelection.getSelectedItem().toString() == "First-Come First-Serve" || threadSelection.getSelectedItem().toString() == "Shortest Job First") {
+                            preemptiveLabel.setText("<html><font color='white'>Batch, nonpreemptive.</font></html>");
+                        } else if (threadSelection.getSelectedItem().toString() == "Shortest Remaining Time") {
+                            preemptiveLabel.setText("<html><font color='white'>Batch, preemptive.</font></html>");
+                        } else {
+                            preemptiveLabel.setText("<html><font color='white'>Interactive, preemptive.</font></html>");
+                        }
+                        mainWindow.repaint();
+                        mainWindow.revalidate();
                     } else {
-                        preemptiveLabel.setText("<html><font color='white'>Interactive, preemptive.</font></html>");
-                    }
-                    mainWindow.repaint();
-                    mainWindow.revalidate();
+                        if (startedSelectionItem != threadSelection.getSelectedIndex()) {
+                            threadSelection.setSelectedIndex(startedSelectionItem);
+                        }
+                    } 
+                } catch (Exception ex) {
+                    threadSelection.setSelectedIndex(startedSelectionItem);
                 }
+                
             }
         });
         // add panel components
@@ -146,44 +158,48 @@ public class Interface extends JFrame {
     }
 
     public void updateExecutionBar(int threadID) {
-        Color color;
-        switch (threadID) {
-            case 0:
-                color = Color.pink;
+        if (stoppedExecBar) {
+            stoppedExecBar = false;
+        } else {
+            Color color;
+            switch (threadID) {
+                case 0:
+                    color = Color.pink;
+                    break;
+                case 1:
+                    color = Color.magenta;
+                    break;
+                case 2:
+                    color = Color.cyan;
+                    break;
+                case 3:
+                    color = Color.yellow;
+                    break;
+                case 4:
+                    color = Color.green;
+                    break;
+                case 5:
+                    color = Color.blue;
+                    break;
+                case 6:
+                    color = Color.orange;
+                    break;
+                case 7:
+                    color = Color.white;
+                    break;
+                default:
+                    color = Color.black;
                 break;
-            case 1:
-                color = Color.magenta;
-                break;
-            case 2:
-                color = Color.cyan;
-                break;
-            case 3:
-                color = Color.yellow;
-                break;
-            case 4:
-                color = Color.green;
-                break;
-            case 5:
-                color = Color.blue;
-                break;
-            case 6:
-                color = Color.orange;
-                break;
-            case 7:
-                color = Color.white;
-                break;
-            default:
-                color = Color.black;
-                break;
-        }
-        if (exeBarPosition == 19) {
-            exeBarPosition = -1;
-        }
-        exeBarPosition++;
-        exeBarLabels[exeBarPosition].setForeground(color);
-        exeBarLabels[exeBarPosition].setText("" + threadID);
-        for (int i = exeBarPosition + 1; i < 20; i++) {
-            exeBarLabels[i].setText("");
+            }
+            if (exeBarPosition == 19) {
+                exeBarPosition = -1;
+            }
+            exeBarPosition++;
+            exeBarLabels[exeBarPosition].setForeground(color);
+            exeBarLabels[exeBarPosition].setText("" + threadID);
+            for (int i = exeBarPosition + 1; i < 20; i++) {
+                exeBarLabels[i].setText("");
+            }   
         }
     }
 
@@ -376,6 +392,8 @@ public class Interface extends JFrame {
         start.setEnabled(false);
         stop.setEnabled(true);
         reset.setEnabled(false);
+        startedSelectionScheme = true;
+        startedSelectionItem = threadSelection.getSelectedIndex();
     }
 
     public void buttonStop() {
@@ -383,6 +401,7 @@ public class Interface extends JFrame {
         start.setEnabled(true);
         stop.setEnabled(false);
         reset.setEnabled(true);
+        stoppedExecBar = true;
     }
 
     public void setupThread() {
