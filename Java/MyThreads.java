@@ -22,6 +22,7 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
     private JLabel activeLabel = new JLabel("Inactive");
     private boolean active = false;
     private int globalSpeed;
+    private volatile boolean running = true;
     private static final int priorityMin = 0;
     private static final int priorityMax = 10;
     private static final int priorityInit = 0; 
@@ -195,6 +196,10 @@ public class MyThreads extends Thread implements Comparable<MyThreads>{
         } else {
             _multipleQueueLevel++;
         }
+    }
+
+    public void  terminate() {
+        running = false;
     }
 
     public int getMultipleQueueLevel() {

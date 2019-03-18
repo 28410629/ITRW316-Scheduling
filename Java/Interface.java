@@ -98,7 +98,7 @@ public class Interface extends JFrame {
 
     public void setupScheme() {
         // create panel
-        panelAttributes(1, "Thread Scheming", gLayout);
+        panelAttributes(1, "Scheduling Algorithm", gLayout);
         // create panel components
         preemptiveLabel = new JLabel("<html><font color='white'>Batch, nonpreemptive.</font></html>");
         threadSelection = new JComboBox<String>(threadSchemes);
@@ -205,7 +205,7 @@ public class Interface extends JFrame {
 
     public void setupSpeed() {
         // create panel
-        panelAttributes(2, "Thread Attributes", gLayout);
+        panelAttributes(2, "New Thread Attributes", gLayout);
         // create components 
         prioritySlider.setBackground(new Color(255,140,0));
         workSlider.setBackground(new Color(128,128,128));
